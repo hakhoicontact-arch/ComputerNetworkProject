@@ -25,6 +25,7 @@ D:\Code\MMT\RCS\RCS.Agent\obj\Debug\net8.0-windows\RCS.Agent.GeneratedMSBuildEdi
 D:\Code\MMT\RCS\RCS.Agent\obj\Debug\net8.0-windows\RCS.Agent.AssemblyInfoInputs.cache
 D:\Code\MMT\RCS\RCS.Agent\obj\Debug\net8.0-windows\RCS.Agent.AssemblyInfo.cs
 D:\Code\MMT\RCS\RCS.Agent\obj\Debug\net8.0-windows\RCS.Agent.csproj.CoreCompileInputs.cache
+D:\Code\MMT\RCS\RCS.Agent\obj\Debug\net8.0-windows\RCS.Agent.sourcelink.json
 D:\Code\MMT\RCS\RCS.Agent\obj\Debug\net8.0-windows\RCS.Agent.csproj.Up2Date
 D:\Code\MMT\RCS\RCS.Agent\obj\Debug\net8.0-windows\RCS.Agent.dll
 D:\Code\MMT\RCS\RCS.Agent\obj\Debug\net8.0-windows\refint\RCS.Agent.dll

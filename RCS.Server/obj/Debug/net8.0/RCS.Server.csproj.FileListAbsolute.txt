@@ -11,6 +11,7 @@ D:\Code\MMT\RCS\RCS.Server\obj\Debug\net8.0\RCS.Server.AssemblyInfoInputs.cache
 D:\Code\MMT\RCS\RCS.Server\obj\Debug\net8.0\RCS.Server.AssemblyInfo.cs
 D:\Code\MMT\RCS\RCS.Server\obj\Debug\net8.0\RCS.Server.csproj.CoreCompileInputs.cache
 D:\Code\MMT\RCS\RCS.Server\obj\Debug\net8.0\RCS.Server.MvcApplicationPartsAssemblyInfo.cache
+D:\Code\MMT\RCS\RCS.Server\obj\Debug\net8.0\RCS.Server.sourcelink.json
 D:\Code\MMT\RCS\RCS.Server\obj\Debug\net8.0\staticwebassets.build.json
 D:\Code\MMT\RCS\RCS.Server\obj\Debug\net8.0\staticwebassets.development.json
 D:\Code\MMT\RCS\RCS.Server\obj\Debug\net8.0\staticwebassets\msbuild.RCS.Server.Microsoft.AspNetCore.StaticWebAssets.props

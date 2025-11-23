@@ -3,12 +3,12 @@ const connectionUrl = "http://localhost:5000/clienthub";
 let connection = null;
 let currentView = 'applications';
 let agentId = 'Agent_12345'; 
+let authToken = ''; // Lưu token sau khi đăng nhập
 
 document.getElementById('agent-id-display').textContent = agentId;
 
-// --- BIẾN TOÀN CỤC CHO DỮ LIỆU VÀ SORT ---
-let globalProcessData = []; // Lưu trữ danh sách tiến trình hiện tại
-let currentSort = { column: 'pid', direction: 'asc' }; // Trạng thái sắp xếp mặc định
+let globalProcessData = []; 
+let currentSort = { column: 'pid', direction: 'asc' }; 
 
 // --- HÀM SIGNALR VÀ GIAO TIẾP ---
 
@@ -28,43 +28,107 @@ async function sendCommand(action, params = {}) {
     }
 }
 
-function startSignalR() {
-    connection = new signalR.HubConnectionBuilder()
-        .withUrl(connectionUrl)
-        .withAutomaticReconnect()
-        .build();
+// Sửa đổi: startSignalR nhận tham số token
+function startSignalR(token) {
+    return new Promise((resolve, reject) => {
+        // Thêm access_token vào URL query string
+        const finalUrl = `${connectionUrl}?access_token=${encodeURIComponent(token)}`;
 
-    connection.on("ReceiveResponse", (response) => {
-        console.log("[SERVER] Nhận Response:", response);
-        handleResponse(response);
-    });
+        connection = new signalR.HubConnectionBuilder()
+            .withUrl(finalUrl)
+            .withAutomaticReconnect()
+            .build();
 
-    connection.on("ReceiveUpdate", (update) => {
-        handleRealtimeUpdate(update);
-    });
-
-    connection.on("ReceiveBinaryChunk", (data) => {
-        handleBinaryStream(data);
-    });
-
-    connection.onclose(() => updateStatus("Mất kết nối. Đang thử lại...", 'error'));
-    connection.onreconnecting(() => updateStatus("Đang kết nối lại...", 'warning'));
-    connection.onreconnected(() => updateStatus("Đã kết nối lại.", 'success'));
-
-    connection.start()
-        .then(() => {
-            updateStatus(`Sẵn sàng.`, 'success');
-            refreshCurrentViewData();
-        })
-        .catch(err => {
-            console.error("Lỗi kết nối: ", err);
-            updateStatus(`Không thể kết nối Server.`, 'error');
+        connection.on("ReceiveResponse", (response) => {
+            console.log("[SERVER] Nhận Response:", response);
+            handleResponse(response);
         });
+
+        connection.on("ReceiveUpdate", (update) => {
+            handleRealtimeUpdate(update);
+        });
+
+        connection.on("ReceiveBinaryChunk", (data) => {
+            handleBinaryStream(data);
+        });
+
+        connection.onclose((error) => {
+            updateStatus("Mất kết nối. Đang thử lại...", 'error');
+            // Nếu lỗi do authentication (401/Abort) thì logout
+            if(error && error.message.includes("StatusCode: 401")) {
+                doLogout();
+            }
+        });
+
+        connection.onreconnecting(() => updateStatus("Đang kết nối lại...", 'warning'));
+        
+        connection.onreconnected(() => {
+            updateStatus("Đã kết nối an toàn", 'success');
+            document.getElementById('status-dot').className = "w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse";
+        });
+
+        connection.start()
+            .then(() => {
+                updateStatus(`Đã kết nối an toàn`, 'success');
+                document.getElementById('status-dot').className = "w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse";
+                refreshCurrentViewData();
+                resolve();
+            })
+            .catch(err => {
+                console.error("Lỗi kết nối: ", err);
+                reject(err);
+            });
+    });
 }
 
 function refreshCurrentViewData() {
     if (currentView === 'applications') sendCommand('app_list');
     if (currentView === 'processes') sendCommand('process_list');
+}
+
+// --- XỬ LÝ LOGIN / LOGOUT (MỚI) ---
+
+function doLogin(password) {
+    const btnText = document.getElementById('btn-text');
+    const btnLoader = document.getElementById('btn-loader');
+    const errorMsg = document.getElementById('login-error');
+    const loginBtn = document.getElementById('login-btn');
+
+    // Loading state
+    btnText.textContent = "Đang kết nối...";
+    btnLoader.classList.remove('hidden');
+    errorMsg.classList.add('hidden');
+    loginBtn.disabled = true;
+
+    // Thử kết nối SignalR với password
+    startSignalR(password)
+        .then(() => {
+            // Thành công: Lưu token, Chuyển màn hình
+            authToken = password;
+            
+            const loginScreen = document.getElementById('login-screen');
+            const appScreen = document.getElementById('app');
+
+            loginScreen.classList.add('opacity-0');
+            setTimeout(() => {
+                loginScreen.classList.add('hidden');
+                appScreen.classList.remove('hidden');
+                // Trigger animation fade-in
+                setTimeout(() => appScreen.classList.remove('opacity-0'), 50);
+            }, 500);
+        })
+        .catch(() => {
+            // Thất bại
+            btnText.textContent = "Đăng Nhập";
+            btnLoader.classList.add('hidden');
+            errorMsg.classList.remove('hidden');
+            loginBtn.disabled = false;
+        });
+}
+
+function doLogout() {
+    if (connection) connection.stop();
+    location.reload(); // Tải lại trang để về màn hình login
 }
 
 // --- HÀM XỬ LÝ PHẢN HỒI ---
@@ -78,7 +142,6 @@ function handleResponse(data) {
         updateAppTable(data.response);
     } 
     else if (currentView === 'processes' && Array.isArray(data.response)) {
-        // Cập nhật dữ liệu toàn cục và vẽ lại bảng
         globalProcessData = data.response;
         updateProcessTable(); 
     }
@@ -135,38 +198,52 @@ function handleBinaryStream(data) {
     }
 }
 
-// --- LOGIC SẮP XẾP TIẾN TRÌNH (MỚI) ---
+// --- LOGIC SẮP XẾP TIẾN TRÌNH ---
 
 function sortProcessTable(column) {
-    // Nếu click cột cũ -> Đảo chiều, Click cột mới -> Mặc định ASC
     if (currentSort.column === column) {
         currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
     } else {
         currentSort.column = column;
-        currentSort.direction = 'desc'; // Mặc định giảm dần cho số liệu (CPU/RAM) thường hữu ích hơn
-        if (column === 'name') currentSort.direction = 'asc'; // Tên thì A-Z
+        currentSort.direction = 'desc'; 
+        if (column === 'name') currentSort.direction = 'asc'; 
     }
-
-    // Vẽ lại bảng với dữ liệu đã sort
     updateProcessTable();
 }
 
 function getSortIcon(column) {
-    if (currentSort.column !== column) return '<i class="fas fa-sort ml-1 text-gray-300"></i>';
-    return currentSort.direction === 'asc' 
-        ? '<i class="fas fa-sort-up ml-1 text-blue-600"></i>' 
-        : '<i class="fas fa-sort-down ml-1 text-blue-600"></i>';
+    const active = currentSort.column === column;
+    const iconName = active 
+        ? (currentSort.direction === 'asc' ? 'fa-sort-up' : 'fa-sort-down')
+        : 'fa-sort';
+    
+    const styleClass = active 
+        ? 'text-blue-600 bg-blue-50 border-blue-200 shadow-sm ring-1 ring-blue-200' 
+        : 'text-gray-400 bg-gray-50 border-gray-200 hover:bg-gray-100 hover:text-gray-600';
+
+    return `<span class="sort-btn ml-2 w-6 h-6 inline-flex items-center justify-center rounded border ${styleClass} transition-all cursor-pointer" title="Sắp xếp">
+        <i class="fas ${iconName} text-xs transform ${active && currentSort.direction === 'desc' ? '-translate-y-0.5' : 'translate-y-0.5'}"></i>
+    </span>`;
 }
 
 // --- HÀM CẬP NHẬT UI ---
 
 function updateStatus(message, type) {
     const statusEl = document.getElementById('status-display');
-    statusEl.textContent = `Trạng thái: ${message}`;
-    statusEl.className = `mt-2 text-sm font-medium ${
-        type === 'success' ? 'text-green-600' :
-        type === 'error' ? 'text-red-600' : 'text-yellow-600'
-    }`;
+    const statusDot = document.getElementById('status-dot');
+    
+    statusEl.textContent = message;
+    
+    if (type === 'success') {
+        statusEl.className = "text-xs font-semibold text-green-600 uppercase tracking-wide";
+        statusDot.className = "w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse";
+    } else if (type === 'error') {
+        statusEl.className = "text-xs font-semibold text-red-600 uppercase tracking-wide";
+        statusDot.className = "w-2.5 h-2.5 rounded-full bg-red-500";
+    } else {
+        statusEl.className = "text-xs font-semibold text-yellow-600 uppercase tracking-wide";
+        statusDot.className = "w-2.5 h-2.5 rounded-full bg-yellow-500 animate-ping";
+    }
 }
 
 function showModal(title, message, onConfirm = null, isInfo = false) {
@@ -181,11 +258,11 @@ function showModal(title, message, onConfirm = null, isInfo = false) {
 
     if (isInfo) {
         confirmBtn.textContent = 'Đóng';
-        confirmBtn.className = 'px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors';
+        confirmBtn.className = 'px-5 py-2.5 bg-blue-600 text-white font-medium rounded-xl hover:bg-blue-700 transition-colors';
         cancelBtn.classList.add('hidden');
     } else {
         confirmBtn.textContent = 'Xác Nhận';
-        confirmBtn.className = 'px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors';
+        confirmBtn.className = 'px-5 py-2.5 bg-red-600 text-white font-medium rounded-xl hover:bg-red-700 shadow-lg shadow-red-200 transition-all';
         cancelBtn.classList.remove('hidden');
     }
 
@@ -303,9 +380,8 @@ function updateAppTable(apps) {
     `).join('');
 }
 
-// 2. Tiến Trình (Đã cập nhật Sort)
+// 2. Tiến Trình
 function renderProcessLayout() {
-    // Lưu ý: Thêm onclick="sortProcessTable(...)" và gọi hàm getSortIcon
     return `
         <div class="space-y-4">
             <div class="flex flex-wrap items-center justify-between gap-4">
@@ -328,17 +404,17 @@ function renderProcessLayout() {
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-200 sticky top-0 select-none">
                         <tr>
-                            <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase cursor-pointer hover:bg-gray-300 transition-colors" onclick="sortProcessTable('pid')">
-                                PID ${getSortIcon('pid')}
+                            <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase cursor-pointer group" onclick="sortProcessTable('pid')">
+                                <div class="flex items-center">PID ${getSortIcon('pid')}</div>
                             </th>
-                            <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase cursor-pointer hover:bg-gray-300 transition-colors" onclick="sortProcessTable('name')">
-                                Tên Tiến Trình ${getSortIcon('name')}
+                            <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase cursor-pointer group" onclick="sortProcessTable('name')">
+                                <div class="flex items-center">Tên Tiến Trình ${getSortIcon('name')}</div>
                             </th>
-                            <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase cursor-pointer hover:bg-gray-300 transition-colors" onclick="sortProcessTable('cpu')">
-                                CPU ${getSortIcon('cpu')}
+                            <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase cursor-pointer group" onclick="sortProcessTable('cpu')">
+                                <div class="flex items-center">CPU ${getSortIcon('cpu')}</div>
                             </th>
-                            <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase cursor-pointer hover:bg-gray-300 transition-colors" onclick="sortProcessTable('mem')">
-                                RAM ${getSortIcon('mem')}
+                            <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase cursor-pointer group" onclick="sortProcessTable('mem')">
+                                <div class="flex items-center">RAM ${getSortIcon('mem')}</div>
                             </th>
                             <th class="px-6 py-3 text-center text-xs font-bold text-gray-700 uppercase">Thao Tác</th>
                         </tr>
@@ -353,7 +429,6 @@ function renderProcessLayout() {
 }
 
 function updateProcessTable() {
-    // Không nhận tham số processes nữa, dùng globalProcessData
     const processes = globalProcessData;
     const tbody = document.getElementById('process-list-body');
     const totalCpuEl = document.getElementById('total-cpu');
@@ -368,7 +443,6 @@ function updateProcessTable() {
         return;
     }
 
-    // --- LOGIC TÍNH TỔNG ---
     let totalCpu = 0;
     let totalMem = 0;
 
@@ -382,10 +456,8 @@ function updateProcessTable() {
     if(totalCpuEl) totalCpuEl.textContent = `CPU: ${totalCpu.toFixed(1)}%`;
     if(totalMemEl) totalMemEl.textContent = `RAM: ${totalMem.toFixed(0)} MB`;
 
-    // --- LOGIC SẮP XẾP ---
     const sortedProcesses = [...processes].sort((a, b) => {
         let valA, valB;
-
         switch (currentSort.column) {
             case 'pid':
                 valA = a.pid;
@@ -403,16 +475,13 @@ function updateProcessTable() {
                 valA = parseFloat(a.mem.replace(' MB', '').replace(',', '')) || 0;
                 valB = parseFloat(b.mem.replace(' MB', '').replace(',', '')) || 0;
                 break;
-            default:
-                return 0;
+            default: return 0;
         }
-
         if (valA < valB) return currentSort.direction === 'asc' ? -1 : 1;
         if (valA > valB) return currentSort.direction === 'asc' ? 1 : -1;
         return 0;
     });
 
-    // --- RENDER LẠI THEO THỨ TỰ ĐÃ SẮP XẾP ---
     tbody.innerHTML = sortedProcesses.map(p => `
         <tr>
             <td class="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-600">${p.pid}</td>
@@ -427,25 +496,24 @@ function updateProcessTable() {
         </tr>
     `).join('');
     
-    // Cập nhật icon sort trên header (Do gọi lại renderProcessLayout sẽ mất event listener nếu không cẩn thận, 
-    // nhưng ở đây ta chỉ update tbody nên header giữ nguyên, cần update icon bằng JS nếu muốn dynamic hoàn toàn 
-    // hoặc chỉ cần gọi lại renderProcessLayout khi đổi tab. 
-    // Ở đây ta update icon bằng cách thay đổi innerHTML của thead nếu cần, nhưng đơn giản nhất là vẽ lại header khi click sort)
-    // Tuy nhiên, cách tốt nhất là cập nhật trực tiếp class của icon.
-    
     updateSortIcons();
 }
 
 function updateSortIcons() {
     ['pid', 'name', 'cpu', 'mem'].forEach(col => {
-        const icon = document.querySelector(`th[onclick="sortProcessTable('${col}')"] i`);
-        if (icon) {
-            if (currentSort.column === col) {
-                icon.className = currentSort.direction === 'asc' 
-                    ? 'fas fa-sort-up ml-1 text-blue-600' 
-                    : 'fas fa-sort-down ml-1 text-blue-600';
+        const span = document.querySelector(`th[onclick="sortProcessTable('${col}')"] span`);
+        const icon = span ? span.querySelector('i') : null;
+        
+        if (span && icon) {
+            const active = currentSort.column === col;
+            span.className = "sort-btn ml-2 w-6 h-6 inline-flex items-center justify-center rounded border transition-all cursor-pointer";
+            
+            if (active) {
+                span.classList.add('text-blue-600', 'bg-blue-50', 'border-blue-200', 'shadow-sm', 'ring-1', 'ring-blue-200');
+                icon.className = `fas ${currentSort.direction === 'asc' ? 'fa-sort-up' : 'fa-sort-down'} text-xs transform ${currentSort.direction === 'desc' ? '-translate-y-0.5' : 'translate-y-0.5'}`;
             } else {
-                icon.className = 'fas fa-sort ml-1 text-gray-300';
+                span.classList.add('text-gray-400', 'bg-gray-50', 'border-gray-200', 'hover:bg-gray-100', 'hover:text-gray-600');
+                icon.className = 'fas fa-sort text-xs';
             }
         }
     });
@@ -570,7 +638,6 @@ function attachViewListeners(view) {
                     showModal("Kill Process", `Chấm dứt tiến trình PID ${pid}?`, () => sendCommand('process_stop', { pid: parseInt(pid) }));
                 }
             });
-            // Search Filter (Lọc trực tiếp trên dữ liệu đã lưu)
             document.getElementById('process-search').addEventListener('keyup', (e) => {
                 const term = e.target.value.toLowerCase();
                 const rows = document.querySelectorAll('#process-list-body tr');
@@ -646,6 +713,16 @@ document.addEventListener('DOMContentLoaded', () => {
             switchView(e.currentTarget.getAttribute('data-view'));
         });
     });
-    startSignalR();
+
+    // --- NEW: Bind Login/Logout events ---
+    document.getElementById('login-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const password = document.getElementById('password-input').value;
+        doLogin(password);
+    });
+
+    document.getElementById('logout-btn').addEventListener('click', doLogout);
+
+    // Switch view to default initially (but hidden)
     switchView(currentView);
 });
