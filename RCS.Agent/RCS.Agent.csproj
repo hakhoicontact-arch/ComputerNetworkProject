@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <!-- QUAN TRỌNG: Thêm đuôi -windows vào đây để sửa lỗi NETSDK1136 -->
+    <TargetFramework>net8.0-windows</TargetFramework>
+    
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+    
+    <!-- Bắt buộc dòng này để dùng thư viện chụp màn hình -->
+    <UseWindowsForms>true</UseWindowsForms>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="8.0.0" />
+    <ProjectReference Include="..\RCS.Common\RCS.Common.csproj" />
+  </ItemGroup>
+
+</Project>

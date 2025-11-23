@@ -1,0 +1,11 @@
+D:\Code\MMT\RCS\RCS.Common\bin\Debug\net8.0\RCS.Common.deps.json
+D:\Code\MMT\RCS\RCS.Common\bin\Debug\net8.0\RCS.Common.dll
+D:\Code\MMT\RCS\RCS.Common\bin\Debug\net8.0\RCS.Common.pdb
+D:\Code\MMT\RCS\RCS.Common\obj\Debug\net8.0\RCS.Common.GeneratedMSBuildEditorConfig.editorconfig
+D:\Code\MMT\RCS\RCS.Common\obj\Debug\net8.0\RCS.Common.AssemblyInfoInputs.cache
+D:\Code\MMT\RCS\RCS.Common\obj\Debug\net8.0\RCS.Common.AssemblyInfo.cs
+D:\Code\MMT\RCS\RCS.Common\obj\Debug\net8.0\RCS.Common.csproj.CoreCompileInputs.cache
+D:\Code\MMT\RCS\RCS.Common\obj\Debug\net8.0\RCS.Common.dll
+D:\Code\MMT\RCS\RCS.Common\obj\Debug\net8.0\refint\RCS.Common.dll
+D:\Code\MMT\RCS\RCS.Common\obj\Debug\net8.0\RCS.Common.pdb
+D:\Code\MMT\RCS\RCS.Common\obj\Debug\net8.0\ref\RCS.Common.dll

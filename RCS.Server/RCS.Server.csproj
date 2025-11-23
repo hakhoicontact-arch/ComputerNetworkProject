@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Tham chiếu đến thư viện Common -->
+    <ProjectReference Include="..\RCS.Common\RCS.Common.csproj" />
+  </ItemGroup>
+
+</Project>
