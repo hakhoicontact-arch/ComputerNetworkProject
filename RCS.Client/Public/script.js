@@ -3,7 +3,7 @@ const connectionUrl = "http://localhost:5000/clienthub";
 let connection = null;
 let currentView = 'applications';
 let agentId = 'Agent_12345'; 
-let authToken = ''; // Lưu token sau khi đăng nhập
+let authToken = ''; 
 
 document.getElementById('agent-id-display').textContent = agentId;
 
@@ -28,10 +28,8 @@ async function sendCommand(action, params = {}) {
     }
 }
 
-// Sửa đổi: startSignalR nhận tham số token
 function startSignalR(token) {
     return new Promise((resolve, reject) => {
-        // Thêm access_token vào URL query string
         const finalUrl = `${connectionUrl}?access_token=${encodeURIComponent(token)}`;
 
         connection = new signalR.HubConnectionBuilder()
@@ -54,7 +52,6 @@ function startSignalR(token) {
 
         connection.onclose((error) => {
             updateStatus("Mất kết nối. Đang thử lại...", 'error');
-            // Nếu lỗi do authentication (401/Abort) thì logout
             if(error && error.message.includes("StatusCode: 401")) {
                 doLogout();
             }
@@ -86,7 +83,7 @@ function refreshCurrentViewData() {
     if (currentView === 'processes') sendCommand('process_list');
 }
 
-// --- XỬ LÝ LOGIN / LOGOUT (MỚI) ---
+// --- XỬ LÝ LOGIN / LOGOUT ---
 
 function doLogin(password) {
     const btnText = document.getElementById('btn-text');
@@ -94,18 +91,14 @@ function doLogin(password) {
     const errorMsg = document.getElementById('login-error');
     const loginBtn = document.getElementById('login-btn');
 
-    // Loading state
     btnText.textContent = "Đang kết nối...";
     btnLoader.classList.remove('hidden');
     errorMsg.classList.add('hidden');
     loginBtn.disabled = true;
 
-    // Thử kết nối SignalR với password
     startSignalR(password)
         .then(() => {
-            // Thành công: Lưu token, Chuyển màn hình
             authToken = password;
-            
             const loginScreen = document.getElementById('login-screen');
             const appScreen = document.getElementById('app');
 
@@ -113,12 +106,10 @@ function doLogin(password) {
             setTimeout(() => {
                 loginScreen.classList.add('hidden');
                 appScreen.classList.remove('hidden');
-                // Trigger animation fade-in
                 setTimeout(() => appScreen.classList.remove('opacity-0'), 50);
             }, 500);
         })
         .catch(() => {
-            // Thất bại
             btnText.textContent = "Đăng Nhập";
             btnLoader.classList.add('hidden');
             errorMsg.classList.remove('hidden');
@@ -128,7 +119,7 @@ function doLogin(password) {
 
 function doLogout() {
     if (connection) connection.stop();
-    location.reload(); // Tải lại trang để về màn hình login
+    location.reload(); 
 }
 
 // --- HÀM XỬ LÝ PHẢN HỒI ---
@@ -198,7 +189,7 @@ function handleBinaryStream(data) {
     }
 }
 
-// --- LOGIC SẮP XẾP TIẾN TRÌNH ---
+// --- LOGIC SẮP XẾP TIẾN TRÌNH (TAM GIÁC) ---
 
 function sortProcessTable(column) {
     if (currentSort.column === column) {
@@ -211,13 +202,11 @@ function sortProcessTable(column) {
     updateProcessTable();
 }
 
+// Tạo icon lần đầu
 function getSortIcon(column) {
     const active = currentSort.column === column;
     
-    // Logic icon: 
-    // - Inactive: Tam giác hướng phải (caret-right)
-    // - Active & Tăng dần (asc): Tam giác hướng xuống (caret-down)
-    // - Active & Giảm dần (desc): Tam giác hướng lên (caret-up)
+    // Logic icon: Chưa chọn -> Caret Right, Chọn -> Caret Up/Down
     const iconName = active 
         ? (currentSort.direction === 'asc' ? 'fa-caret-down' : 'fa-caret-up')
         : 'fa-caret-right';
@@ -226,10 +215,31 @@ function getSortIcon(column) {
         ? 'text-blue-600 bg-blue-50 border-blue-200 shadow-sm ring-1 ring-blue-200' 
         : 'text-gray-400 bg-gray-50 border-gray-200 hover:bg-gray-100 hover:text-gray-600';
 
-    // Điều chỉnh: w-5 h-5 (nhỏ hơn), rounded-md (bo góc nhẹ)
     return `<span class="sort-btn ml-2 w-5 h-5 inline-flex items-center justify-center rounded-md border ${styleClass} transition-all cursor-pointer" title="Sắp xếp">
         <i class="fas ${iconName} text-xs"></i>
     </span>`;
+}
+
+// Cập nhật icon khi bấm (Sửa lỗi: Đồng nhất icon Caret)
+function updateSortIcons() {
+    ['pid', 'name', 'cpu', 'mem'].forEach(col => {
+        const span = document.querySelector(`th[onclick="sortProcessTable('${col}')"] span`);
+        const icon = span ? span.querySelector('i') : null;
+        
+        if (span && icon) {
+            const active = currentSort.column === col;
+            span.className = "sort-btn ml-2 w-5 h-5 inline-flex items-center justify-center rounded-md border transition-all cursor-pointer";
+            
+            if (active) {
+                span.classList.add('text-blue-600', 'bg-blue-50', 'border-blue-200', 'shadow-sm', 'ring-1', 'ring-blue-200');
+                // Logic: Tăng dần -> Mũi nhọn hướng xuống (Down), Giảm dần -> Hướng lên (Up)
+                icon.className = `fas ${currentSort.direction === 'asc' ? 'fa-caret-down' : 'fa-caret-up'} text-xs`;
+            } else {
+                span.classList.add('text-gray-400', 'bg-gray-50', 'border-gray-200', 'hover:bg-gray-100', 'hover:text-gray-600');
+                icon.className = 'fas fa-caret-right text-xs';
+            }
+        }
+    });
 }
 
 // --- HÀM CẬP NHẬT UI ---
@@ -386,7 +396,7 @@ function updateAppTable(apps) {
     `).join('');
 }
 
-// 2. Tiến Trình
+// 2. Tiến Trình (Đã cập nhật Header)
 function renderProcessLayout() {
     return `
         <div class="space-y-4">
@@ -512,14 +522,14 @@ function updateSortIcons() {
         
         if (span && icon) {
             const active = currentSort.column === col;
-            span.className = "sort-btn ml-2 w-6 h-6 inline-flex items-center justify-center rounded border transition-all cursor-pointer";
+            span.className = "sort-btn ml-2 w-5 h-5 inline-flex items-center justify-center rounded-md border transition-all cursor-pointer";
             
             if (active) {
                 span.classList.add('text-blue-600', 'bg-blue-50', 'border-blue-200', 'shadow-sm', 'ring-1', 'ring-blue-200');
-                icon.className = `fas ${currentSort.direction === 'asc' ? 'fa-sort-up' : 'fa-sort-down'} text-xs transform ${currentSort.direction === 'desc' ? '-translate-y-0.5' : 'translate-y-0.5'}`;
+                icon.className = `fas ${currentSort.direction === 'asc' ? 'fa-caret-down' : 'fa-caret-up'} text-xs`;
             } else {
                 span.classList.add('text-gray-400', 'bg-gray-50', 'border-gray-200', 'hover:bg-gray-100', 'hover:text-gray-600');
-                icon.className = 'fas fa-sort text-xs';
+                icon.className = 'fas fa-caret-right text-xs';
             }
         }
     });
