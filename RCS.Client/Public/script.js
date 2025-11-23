@@ -2,9 +2,13 @@
 const connectionUrl = "http://localhost:5000/clienthub"; 
 let connection = null;
 let currentView = 'applications';
-let agentId = 'Agent_12345'; // Có thể thay đổi từ UI nếu cần
+let agentId = 'Agent_12345'; 
 
 document.getElementById('agent-id-display').textContent = agentId;
+
+// --- BIẾN TOÀN CỤC CHO DỮ LIỆU VÀ SORT ---
+let globalProcessData = []; // Lưu trữ danh sách tiến trình hiện tại
+let currentSort = { column: 'pid', direction: 'asc' }; // Trạng thái sắp xếp mặc định
 
 // --- HÀM SIGNALR VÀ GIAO TIẾP ---
 
@@ -30,18 +34,15 @@ function startSignalR() {
         .withAutomaticReconnect()
         .build();
 
-    // 1. Nhận phản hồi chung (List, Start, Stop...)
     connection.on("ReceiveResponse", (response) => {
         console.log("[SERVER] Nhận Response:", response);
         handleResponse(response);
     });
 
-    // 2. Nhận cập nhật realtime (Keylogger)
     connection.on("ReceiveUpdate", (update) => {
         handleRealtimeUpdate(update);
     });
 
-    // 3. Nhận stream binary (Screenshot/Webcam)
     connection.on("ReceiveBinaryChunk", (data) => {
         handleBinaryStream(data);
     });
@@ -77,7 +78,9 @@ function handleResponse(data) {
         updateAppTable(data.response);
     } 
     else if (currentView === 'processes' && Array.isArray(data.response)) {
-        updateProcessTable(data.response);
+        // Cập nhật dữ liệu toàn cục và vẽ lại bảng
+        globalProcessData = data.response;
+        updateProcessTable(); 
     }
     else if (currentView === 'system') {
         if (data.response === 'ok' || data.response === 'done') {
@@ -89,7 +92,6 @@ function handleResponse(data) {
     }
     else if (data.response === 'done' || data.response === 'ok' || data.response === 'started' || data.response === 'stopped' || data.response === 'killed') {
         console.log("Command executed successfully: " + data.response);
-        // Tự động làm mới danh sách sau khi thao tác thành công
         if (data.response === 'stopped' && currentView === 'applications') sendCommand('app_list');
         if (data.response === 'killed' && currentView === 'processes') sendCommand('process_list');
     }
@@ -133,7 +135,31 @@ function handleBinaryStream(data) {
     }
 }
 
-// --- HÀM CẬP NHẬT UI (HELPER) ---
+// --- LOGIC SẮP XẾP TIẾN TRÌNH (MỚI) ---
+
+function sortProcessTable(column) {
+    // Nếu click cột cũ -> Đảo chiều, Click cột mới -> Mặc định ASC
+    if (currentSort.column === column) {
+        currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
+    } else {
+        currentSort.column = column;
+        currentSort.direction = 'desc'; // Mặc định giảm dần cho số liệu (CPU/RAM) thường hữu ích hơn
+        if (column === 'name') currentSort.direction = 'asc'; // Tên thì A-Z
+    }
+
+    // Vẽ lại bảng với dữ liệu đã sort
+    updateProcessTable();
+}
+
+function getSortIcon(column) {
+    if (currentSort.column !== column) return '<i class="fas fa-sort ml-1 text-gray-300"></i>';
+    return currentSort.direction === 'asc' 
+        ? '<i class="fas fa-sort-up ml-1 text-blue-600"></i>' 
+        : '<i class="fas fa-sort-down ml-1 text-blue-600"></i>';
+}
+
+// --- HÀM CẬP NHẬT UI ---
+
 function updateStatus(message, type) {
     const statusEl = document.getElementById('status-display');
     statusEl.textContent = `Trạng thái: ${message}`;
@@ -175,8 +201,6 @@ function showModal(title, message, onConfirm = null, isInfo = false) {
     newCancelBtn.onclick = () => container.classList.add('hidden');
     container.classList.remove('hidden');
 }
-
-// --- LOGIC RENDER ---
 
 function getLoadingRow(colspan) {
     return `<tr><td colspan="${colspan}" class="px-6 py-8 text-center"><div class="loader mb-2"></div><span class="text-gray-500 text-sm">Đang tải dữ liệu từ Agent...</span></td></tr>`;
@@ -271,7 +295,6 @@ function updateAppTable(apps) {
                 </span>
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
-                <!-- Cập nhật: Nút Đóng -->
                 <button data-action="stop-app" data-id="${app.name}" class="bg-red-50 text-red-600 px-3 py-1 rounded hover:bg-red-100 hover:text-red-900 transition-colors disabled:opacity-50 flex items-center mx-auto" ${app.status === 'Closed' ? 'disabled' : ''}>
                     <i class="fas fa-times-circle mr-1"></i> Đóng
                 </button>
@@ -280,8 +303,9 @@ function updateAppTable(apps) {
     `).join('');
 }
 
-// 2. Tiến Trình
+// 2. Tiến Trình (Đã cập nhật Sort)
 function renderProcessLayout() {
+    // Lưu ý: Thêm onclick="sortProcessTable(...)" và gọi hàm getSortIcon
     return `
         <div class="space-y-4">
             <div class="flex flex-wrap items-center justify-between gap-4">
@@ -294,7 +318,6 @@ function renderProcessLayout() {
                         <i class="fas fa-plus mr-2"></i> Mở Process
                     </button>
                 </div>
-                <!-- Cập nhật: Khu vực hiển thị Tổng CPU/RAM -->
                 <div class="bg-gray-100 px-4 py-2 rounded-lg border border-gray-300 text-sm font-mono text-gray-700">
                     <span id="total-cpu" class="mr-4 font-bold text-blue-600">CPU: 0%</span>
                     <span id="total-mem" class="font-bold text-purple-600">RAM: 0 MB</span>
@@ -303,12 +326,20 @@ function renderProcessLayout() {
             
             <div class="table-container bg-gray-50 rounded-lg shadow-inner">
                 <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-200 sticky top-0">
+                    <thead class="bg-gray-200 sticky top-0 select-none">
                         <tr>
-                            <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase">PID</th>
-                            <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase">Tên Tiến Trình</th>
-                            <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase">CPU</th>
-                            <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase">RAM</th>
+                            <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase cursor-pointer hover:bg-gray-300 transition-colors" onclick="sortProcessTable('pid')">
+                                PID ${getSortIcon('pid')}
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase cursor-pointer hover:bg-gray-300 transition-colors" onclick="sortProcessTable('name')">
+                                Tên Tiến Trình ${getSortIcon('name')}
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase cursor-pointer hover:bg-gray-300 transition-colors" onclick="sortProcessTable('cpu')">
+                                CPU ${getSortIcon('cpu')}
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase cursor-pointer hover:bg-gray-300 transition-colors" onclick="sortProcessTable('mem')">
+                                RAM ${getSortIcon('mem')}
+                            </th>
                             <th class="px-6 py-3 text-center text-xs font-bold text-gray-700 uppercase">Thao Tác</th>
                         </tr>
                     </thead>
@@ -321,7 +352,9 @@ function renderProcessLayout() {
     `;
 }
 
-function updateProcessTable(processes) {
+function updateProcessTable() {
+    // Không nhận tham số processes nữa, dùng globalProcessData
+    const processes = globalProcessData;
     const tbody = document.getElementById('process-list-body');
     const totalCpuEl = document.getElementById('total-cpu');
     const totalMemEl = document.getElementById('total-mem');
@@ -335,7 +368,7 @@ function updateProcessTable(processes) {
         return;
     }
 
-    // Tính toán tổng CPU/RAM
+    // --- LOGIC TÍNH TỔNG ---
     let totalCpu = 0;
     let totalMem = 0;
 
@@ -346,15 +379,45 @@ function updateProcessTable(processes) {
         totalMem += memVal;
     });
 
-    // Cập nhật hiển thị tổng
     if(totalCpuEl) totalCpuEl.textContent = `CPU: ${totalCpu.toFixed(1)}%`;
     if(totalMemEl) totalMemEl.textContent = `RAM: ${totalMem.toFixed(0)} MB`;
 
-    tbody.innerHTML = processes.map(p => `
+    // --- LOGIC SẮP XẾP ---
+    const sortedProcesses = [...processes].sort((a, b) => {
+        let valA, valB;
+
+        switch (currentSort.column) {
+            case 'pid':
+                valA = a.pid;
+                valB = b.pid;
+                break;
+            case 'name':
+                valA = a.name.toLowerCase();
+                valB = b.name.toLowerCase();
+                break;
+            case 'cpu':
+                valA = parseFloat(a.cpu.replace('%', '')) || 0;
+                valB = parseFloat(b.cpu.replace('%', '')) || 0;
+                break;
+            case 'mem':
+                valA = parseFloat(a.mem.replace(' MB', '').replace(',', '')) || 0;
+                valB = parseFloat(b.mem.replace(' MB', '').replace(',', '')) || 0;
+                break;
+            default:
+                return 0;
+        }
+
+        if (valA < valB) return currentSort.direction === 'asc' ? -1 : 1;
+        if (valA > valB) return currentSort.direction === 'asc' ? 1 : -1;
+        return 0;
+    });
+
+    // --- RENDER LẠI THEO THỨ TỰ ĐÃ SẮP XẾP ---
+    tbody.innerHTML = sortedProcesses.map(p => `
         <tr>
             <td class="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-600">${p.pid}</td>
             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 truncate max-w-xs" title="${p.name}">${p.name}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${p.cpu || '0%'}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-semibold ${parseFloat(p.cpu) > 50 ? 'text-red-600' : ''}">${p.cpu || '0%'}</td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${p.mem || '0 MB'}</td>
             <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
                 <button data-action="kill-process" data-id="${p.pid}" class="text-red-600 hover:text-red-900 transition-colors">
@@ -363,6 +426,29 @@ function updateProcessTable(processes) {
             </td>
         </tr>
     `).join('');
+    
+    // Cập nhật icon sort trên header (Do gọi lại renderProcessLayout sẽ mất event listener nếu không cẩn thận, 
+    // nhưng ở đây ta chỉ update tbody nên header giữ nguyên, cần update icon bằng JS nếu muốn dynamic hoàn toàn 
+    // hoặc chỉ cần gọi lại renderProcessLayout khi đổi tab. 
+    // Ở đây ta update icon bằng cách thay đổi innerHTML của thead nếu cần, nhưng đơn giản nhất là vẽ lại header khi click sort)
+    // Tuy nhiên, cách tốt nhất là cập nhật trực tiếp class của icon.
+    
+    updateSortIcons();
+}
+
+function updateSortIcons() {
+    ['pid', 'name', 'cpu', 'mem'].forEach(col => {
+        const icon = document.querySelector(`th[onclick="sortProcessTable('${col}')"] i`);
+        if (icon) {
+            if (currentSort.column === col) {
+                icon.className = currentSort.direction === 'asc' 
+                    ? 'fas fa-sort-up ml-1 text-blue-600' 
+                    : 'fas fa-sort-down ml-1 text-blue-600';
+            } else {
+                icon.className = 'fas fa-sort ml-1 text-gray-300';
+            }
+        }
+    });
 }
 
 // 3. Các View khác
@@ -484,6 +570,7 @@ function attachViewListeners(view) {
                     showModal("Kill Process", `Chấm dứt tiến trình PID ${pid}?`, () => sendCommand('process_stop', { pid: parseInt(pid) }));
                 }
             });
+            // Search Filter (Lọc trực tiếp trên dữ liệu đã lưu)
             document.getElementById('process-search').addEventListener('keyup', (e) => {
                 const term = e.target.value.toLowerCase();
                 const rows = document.querySelectorAll('#process-list-body tr');
@@ -505,7 +592,6 @@ function attachViewListeners(view) {
                 screenshotPending = true;
                 sendCommand('screenshot');
             };
-            // Cập nhật: Lưu file với tên tùy chỉnh
             document.getElementById('save-screenshot-btn').onclick = () => {
                 const img = document.getElementById('screenshot-image');
                 if (img.src) {
@@ -513,11 +599,9 @@ function attachViewListeners(view) {
                     if (!filename || filename.trim() === "") {
                         filename = `screenshot_${new Date().getTime()}.png`;
                     }
-                    // Đảm bảo đuôi .png
                     if (!filename.toLowerCase().endsWith('.png')) {
                         filename += '.png';
                     }
-
                     const link = document.createElement('a');
                     link.href = img.src;
                     link.download = filename;
