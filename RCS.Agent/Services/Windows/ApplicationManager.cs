@@ -138,19 +138,30 @@ namespace RCS.Agent.Services.Windows
         {
             try 
             {
-                // Thử kill bằng tên file exe trước (chính xác hơn)
+                // Thử tìm process bằng tên file exe (chính xác hơn)
                 string processName = Path.GetFileNameWithoutExtension(pathOrName);
                 var procs = Process.GetProcessesByName(processName);
+                
+                // Nếu không tìm thấy theo tên exe, thử tìm theo tên cửa sổ (fallback)
+                if (procs.Length == 0)
+                {
+                    procs = Process.GetProcesses().Where(p => p.MainWindowTitle.Contains(pathOrName)).ToArray();
+                }
+
                 if (procs.Length > 0)
                 {
-                    foreach (var p in procs) p.Kill();
-                }
-                else
-                {
-                    // Nếu không tìm thấy, thử tìm theo tên cửa sổ (fallback)
-                    foreach (var p in Process.GetProcesses())
+                    foreach (var p in procs) 
                     {
-                        if (p.MainWindowTitle.Contains(pathOrName)) p.Kill();
+                        try 
+                        {
+                            // SỬA LỖI: Dùng CloseMainWindow trước để đóng nhẹ nhàng (hiện dialog Save nếu có)
+                            // Nếu app không có cửa sổ (background app) thì CloseMainWindow trả về false -> khi đó mới Kill
+                            if (!p.CloseMainWindow()) 
+                            {
+                                p.Kill();
+                            }
+                        }
+                        catch { }
                     }
                 }
             } 

