@@ -8,6 +8,10 @@ namespace RCS.Agent
 {
     class Program
     {
+
+        public const int FRAME_PER_SECOND = 60;     // FPS 
+        public const int SECOND_PER_FRAME = 1000 / FRAME_PER_SECOND; // Thời gian mỗi frame (ms)
+
         private static SignalRClient _signalRClient;
         private static ApplicationManager _appManager;
         private static ProcessMonitor _processMonitor;
@@ -110,7 +114,7 @@ namespace RCS.Agent
                         await SendFragmentedImage(imageBytes);
                     }
                     
-                    await Task.Delay(40, token);
+                    await Task.Delay(SECOND_PER_FRAME, token);
                 }
                 catch (TaskCanceledException) { break; }
                 catch (ObjectDisposedException) { break; } // Bắt lỗi nếu object bị hủy ngang
@@ -149,8 +153,6 @@ namespace RCS.Agent
                     Array.Copy(imageBytes, offset, packet, 12, size);
 
                     await _udpClient.SendAsync(packet, packet.Length, SERVER_UDP_HOST, SERVER_UDP_PORT);
-                    
-                    if (i % 5 == 0) await Task.Delay(1); 
                 }
             }
             catch { }

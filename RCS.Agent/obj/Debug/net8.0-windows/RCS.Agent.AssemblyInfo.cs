@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("RCS.Agent")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+5cab9ce9eb8d22c4db9797bcb75efa22fa582297")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+e70273b9d258980bbba51361644ad54173060122")]
 [assembly: System.Reflection.AssemblyProductAttribute("RCS.Agent")]
 [assembly: System.Reflection.AssemblyTitleAttribute("RCS.Agent")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

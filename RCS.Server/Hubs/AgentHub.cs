@@ -46,6 +46,7 @@ namespace RCS.Server.Hubs
             await _clientHubContext.Clients.All.SendAsync("ReceiveBinaryChunk", base64Data);
         }
 
+        // Xử lý khi Agent ngắt kết nối
         public override Task OnDisconnectedAsync(Exception exception)
         {
             _connectionManager.RemoveAgent(Context.ConnectionId);

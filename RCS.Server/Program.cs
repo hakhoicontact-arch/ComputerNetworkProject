@@ -4,19 +4,19 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using RCS.Server.Hubs;
 using RCS.Server.Services;
-
 namespace RCS.Server
 {
     public class Program
     {
+        public const int ReceiveMessageSize_MB = 50;
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
 
             // --- 1. Cấu hình SignalR ---
-            // Tăng giới hạn tin nhắn lên 10MB để server có thể nhận ảnh (screenshot/webcam)
+            // Tăng giới hạn tin nhắn lên 50MB để server có thể nhận ảnh (screenshot/webcam)
             builder.Services.AddSignalR(options => {
-                options.MaximumReceiveMessageSize = 10 * 1024 * 1024;
+                options.MaximumReceiveMessageSize = ReceiveMessageSize_MB * 1024 * 1024;
             });
 
             // --- 2. Cấu hình CORS ---

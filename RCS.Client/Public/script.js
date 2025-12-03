@@ -478,22 +478,59 @@ function updateAppTable(apps) {
         return;
     }
 
-    tbody.innerHTML = apps.map(app => `
-        <tr>
-            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${app.name || 'Unknown'}</td>
+    tbody.innerHTML = apps.map(app => {
+        const isRunning = app.status === 'Running';
+        
+        // Cấu hình nút bấm dựa trên trạng thái
+        const btnColor = isRunning ? 'bg-red-50 text-red-600 hover:bg-red-100' : 'bg-green-50 text-green-600 hover:bg-green-100';
+        const btnIcon = isRunning ? 'fa-stop-circle' : 'fa-play-circle';
+        const btnText = isRunning ? 'Đóng' : 'Mở';
+        const btnAction = isRunning ? 'stop-app' : 'start-app';
+        
+        // ID để gửi lệnh: Nếu Mở thì gửi Path, Nếu Đóng thì cũng gửi Path (Server sẽ tự cắt lấy tên process)
+        const actionId = app.path; 
+
+        return `
+        <tr class="hover:bg-slate-50 transition-colors">
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                <div class="flex items-center">
+                    <div class="w-8 h-8 rounded bg-slate-200 flex items-center justify-center mr-3 text-slate-500">
+                        <i class="fas fa-cube"></i>
+                    </div>
+                    ${app.name || 'Unknown'}
+                </div>
+            </td>
             <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-500 truncate max-w-xs" title="${app.path}">${app.path || 'N/A'}</td>
             <td class="px-6 py-4 whitespace-nowrap">
-                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${app.status === 'Running' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}">
-                    ${app.status || 'Installed'}
+                <span class="px-2 py-1 text-xs font-semibold rounded-full ${isRunning ? 'bg-green-100 text-green-700 border border-green-200' : 'bg-slate-100 text-slate-600 border border-slate-200'}">
+                    <i class="fas ${isRunning ? 'fa-check-circle' : 'fa-minus-circle'} mr-1"></i>
+                    ${app.status || 'Unknown'}
                 </span>
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
-                <button data-action="stop-app" data-id="${app.name}" class="bg-red-50 text-red-600 px-3 py-1 rounded hover:bg-red-100 hover:text-red-900 transition-colors disabled:opacity-50 flex items-center mx-auto" ${app.status === 'Closed' ? 'disabled' : ''}>
-                    <i class="fas fa-times-circle mr-1"></i> Đóng
+                <button data-action="${btnAction}" data-id="${actionId}" class="${btnColor} px-4 py-1.5 rounded-lg transition-colors shadow-sm border border-transparent hover:border-current flex items-center mx-auto w-24 justify-center font-semibold">
+                    <i class="fas ${btnIcon} mr-2"></i> ${btnText}
                 </button>
             </td>
         </tr>
-    `).join('');
+        `;
+    }).join('');
+    
+    // Gắn sự kiện cho cả nút Mở và Đóng
+    document.querySelectorAll('button[data-action="start-app"]').forEach(btn => {
+        btn.onclick = () => {
+            // Hiệu ứng loading nhẹ
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            sendCommand('app_start', { name: btn.dataset.id });
+        };
+    });
+
+    document.querySelectorAll('button[data-action="stop-app"]').forEach(btn => {
+        btn.onclick = () => {
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            sendCommand('app_stop', { name: btn.dataset.id });
+        };
+    });
 }
 
 // 2. Tiến Trình (Đã cập nhật Header)

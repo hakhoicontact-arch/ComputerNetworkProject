@@ -90,7 +90,7 @@ namespace RCS.Agent.Services.Windows
                             else {
                                 // Bỏ qua lần nhấn này do nằm trong khoảng Debounce
                             }
-       }
+                        }
                         // TRƯỜNG HỢP 2: Đang giữ phím (Hold)
                         else if (wasDown && now >= _lastPressTimes[i])
                         {

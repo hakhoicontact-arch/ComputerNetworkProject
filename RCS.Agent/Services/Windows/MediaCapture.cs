@@ -6,18 +6,23 @@
 //
 //      Mục đích: Cung cấp các chức năng để chụp ảnh màn hình và quay webcam.
 // -----------------------------------------------------------------------------
+
 using System;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Windows.Forms; // System.Windows.Forms vẫn cần để lấy độ phân giải màn hình
-using OpenCvSharp; // Thư viện mới
+using OpenCvSharp;
 
 namespace RCS.Agent.Services.Windows
 {
     public class MediaCapture : IDisposable
     {
+            
+    public const double  FRAME_WIDTH = 1920*4;
+    public const double  FRAME_HEIGHT = 1080*4; 
+
         // --- 1. PHẦN CHỤP MÀN HÌNH  ---
         [DllImport("user32.dll")] private static extern bool SetProcessDPIAware(); // Đặt DPIAware để chụp màn hình không bị mờ trên các màn hình DPI cao
 
@@ -37,7 +42,6 @@ namespace RCS.Agent.Services.Windows
                 {
                     using (Graphics g = Graphics.FromImage(bitmap))
                     {
-                        // SỬA LỖI CS0104: Chỉ định rõ System.Drawing.Point để tránh nhầm với OpenCvSharp.Point
                         g.CopyFromScreen(System.Drawing.Point.Empty, System.Drawing.Point.Empty, bounds.Size);
                     }
                     return BitmapToBase64(bitmap);
@@ -62,9 +66,9 @@ namespace RCS.Agent.Services.Windows
                 _capture = new VideoCapture(0);
                 
                 // Cấu hình Camera
-                _capture.Set(VideoCaptureProperties.FrameWidth, 640);
-                _capture.Set(VideoCaptureProperties.FrameHeight, 480);
-                _capture.Set(VideoCaptureProperties.Fps, 30);
+                _capture.Set(VideoCaptureProperties.FrameWidth, FRAME_WIDTH);
+                _capture.Set(VideoCaptureProperties.FrameHeight, FRAME_HEIGHT);
+                _capture.Set(VideoCaptureProperties.Fps, Program.FRAME_PER_SECOND);
 
                 if (_capture.IsOpened())
                 {
@@ -110,11 +114,11 @@ namespace RCS.Agent.Services.Windows
                     // Lấy frame từ camera
                     if (_capture.Read(frame) && !frame.Empty())
                     {
-                        // SỬA LỖI: Dùng Cv2.ImEncode thay vì BitmapConverter
-                        // Cách này nén thẳng Mat sang mảng byte JPEG mà không cần System.Drawing
-                        // Giúp loại bỏ sự phụ thuộc vào OpenCvSharp.Extensions
-                        
-                        var encodeParams = new int[] { (int)ImwriteFlags.JpegQuality, 50 };
+                        // --- NÂNG CHẤT LƯỢNG ẢNH (JPEG QUALITY) ---
+                        // 50: Trung bình (nhẹ)
+                        // 85: Rất nét (nặng hơn khoảng gấp đôi)
+                        // 95-100: Gần như gốc (rất nặng, không khuyến khích cho UDP)
+                        var encodeParams = new int[] { (int)ImwriteFlags.JpegQuality, 80 };
                         Cv2.ImEncode(".jpg", frame, out byte[] buf, encodeParams);
                         
                         return buf;

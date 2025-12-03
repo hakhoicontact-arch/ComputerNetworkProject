@@ -7,8 +7,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Sockets;
 using System.Threading;
+using RCS.Server;   
 using System.Threading.Tasks;
-
 namespace RCS.Server.Services
 {
     public class UdpListenerService : BackgroundService
@@ -16,6 +16,7 @@ namespace RCS.Server.Services
         private readonly IHubContext<ClientHub> _hubContext;
         private readonly UdpClient _udpServer;
         private const int LISTEN_PORT = 6000;
+        private const int FRAME_PER_SECOND = 60; // Số frame mỗi giây để in log
 
         private readonly ConcurrentDictionary<int, ReceivedFrame> _frameBuffer = new();
 
@@ -25,8 +26,8 @@ namespace RCS.Server.Services
             try 
             {
                 _udpServer = new UdpClient(LISTEN_PORT);
-                // Tăng bộ đệm lên 10MB
-                _udpServer.Client.ReceiveBufferSize = 10 * 1024 * 1024; 
+                // Tăng bộ đệm lên 50MB
+                _udpServer.Client.ReceiveBufferSize = Program.ReceiveMessageSize_MB * 1024 * 1024; 
             }
             catch (Exception ex)
             {
@@ -48,13 +49,13 @@ namespace RCS.Server.Services
             });
 
             while (!stoppingToken.IsCancellationRequested)
-            {
+            {   
                 try
                 {
                     var result = await _udpServer.ReceiveAsync(stoppingToken);
                     
-                    // --- QUAN TRỌNG: Hiện dấu chấm để biết có tín hiệu ---
-                    Console.Write("."); 
+                    // --- QUAN TRỌNG: Hiện dấu chấm để biết có tín hiệu --- (dùng khi test)
+                    // Console.Write("."); 
                     
                     ProcessPacket(result.Buffer);
                 }
@@ -97,7 +98,9 @@ namespace RCS.Server.Services
                 if (currentFrame.Packets.Count == totalPackets)
                 {
                     // In xuống dòng mới để không bị dính vào dấu chấm
-                    Console.WriteLine($"\n[UDP] Frame {frameId} OK. Sending...");
+                    if (frameId % FRAME_PER_SECOND == 0 || frameId == 1) {  // In frame đầu tiên và các frame theo tần suất
+                        Console.WriteLine($"\n[UDP] Frame {frameId} OK. Sending...");
+                    }
                     ReassembleAndSend(frameId, currentFrame);
                     _frameBuffer.TryRemove(frameId, out _);
                 }
