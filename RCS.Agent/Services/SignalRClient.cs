@@ -1,3 +1,15 @@
+// -----------------------------------------------------------------------------
+// File: SignalRClient.cs
+// Role:
+//      Định tuyến giao tiếp giữa Agent và Server thông qua SignalR.
+//      Chịu trách nhiệm giữ kết nối, nhận lệnh (CommandMessage) và
+//      gửi phản hồi, cập nhật thời gian thực, hoặc dữ liệu nhị phân.
+//
+// Tác động hệ thống:
+//      - Nếu kết nối chết -> Agent không còn nhận lệnh.
+//      - Nếu message định dạng sai -> Server không hiểu, Agent kh hoạt động.
+// -----------------------------------------------------------------------------
+
 using Microsoft.AspNetCore.SignalR.Client;
 using RCS.Common.Models;
 using RCS.Common.Protocols;

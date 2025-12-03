@@ -1,25 +1,33 @@
-using OpenCvSharp; // Thư viện mới
-// using OpenCvSharp.Extensions; // Đã xóa dòng này để fix lỗi thiếu reference
+// -----------------------------------------------------------------------------
+// File: MediaCapture.cs
+// Description:
+//      Dịch vụ chụp ảnh màn hình và quay webcam.
+//      Định nghĩa dịch vụ chụp ảnh màn hình và quay webcam
+//
+//      Mục đích: Cung cấp các chức năng để chụp ảnh màn hình và quay webcam.
+// -----------------------------------------------------------------------------
 using System;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Runtime.InteropServices;
-// System.Windows.Forms vẫn cần để lấy độ phân giải màn hình
-using System.Windows.Forms; 
+using System.Windows.Forms; // System.Windows.Forms vẫn cần để lấy độ phân giải màn hình
+using OpenCvSharp; // Thư viện mới
 
 namespace RCS.Agent.Services.Windows
 {
     public class MediaCapture : IDisposable
     {
-        // --- 1. PHẦN CHỤP MÀN HÌNH (Giữ nguyên dùng GDI+) ---
-        [DllImport("user32.dll")] private static extern bool SetProcessDPIAware();
+        // --- 1. PHẦN CHỤP MÀN HÌNH  ---
+        [DllImport("user32.dll")] private static extern bool SetProcessDPIAware(); // Đặt DPIAware để chụp màn hình không bị mờ trên các màn hình DPI cao
 
+        // Constructor
         public MediaCapture()
         {
             try { SetProcessDPIAware(); } catch { }
         }
 
+        // Chụp màn hình lưu dưới dạng base64
         public string CaptureScreenBase64()
         {
             try
@@ -38,11 +46,12 @@ namespace RCS.Agent.Services.Windows
             catch { return ""; }
         }
 
-        // --- 2. PHẦN WEBCAM (SỬ DỤNG OPENCV - KHÔNG CẦN EXTENSIONS) ---
+        // --- 2. PHẦN WEBCAM ---
         
         private VideoCapture _capture;
         private bool _isWebcamReady = false;
 
+        // Khởi động webcam
         public bool StartWebcam()
         {
             if (_isWebcamReady && _capture != null && _capture.IsOpened()) return true;
@@ -113,8 +122,11 @@ namespace RCS.Agent.Services.Windows
                 }
                 return null;
             }
-            catch 
+            catch (Exception ex)
             { 
+                _isWebcamReady = false; // Đảm bảo trạng thái webcam được cập nhật
+                Console.WriteLine($"[Webcam Error] Failed to get webcam frame or webcam disconnected. Attempting to stop webcam. Exception: {ex.Message}");
+                StopWebcam(); // Dừng webcam nếu có lỗi khi lấy frame
                 return null; 
             }
         }
@@ -127,11 +139,11 @@ namespace RCS.Agent.Services.Windows
         // Helper: Bitmap -> Base64 String (Chỉ dùng cho chụp màn hình)
         private string BitmapToBase64(Bitmap bitmap, long quality = 75L)
         {
-            using (MemoryStream ms = new MemoryStream())
+            using (MemoryStream ms = new MemoryStream()) // Sử dụng MemoryStream để lưu trữ ảnh
             {
                 ImageCodecInfo jpgEncoder = GetEncoder(ImageFormat.Jpeg);
                 var encoderParams = new EncoderParameters(1);
-                encoderParams.Param[0] = new EncoderParameter(System.Drawing.Imaging.Encoder.Quality, quality);
+                encoderParams.Param[0] = new EncoderParameter(System.Drawing.Imaging.Encoder.Quality, quality); // Đặt chất lượng ảnh JPEG
                 bitmap.Save(ms, jpgEncoder, encoderParams);
                 return "data:image/jpeg;base64," + Convert.ToBase64String(ms.ToArray());
             }

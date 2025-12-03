@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace RCS.Server.Services
 {
-    // Service này đóng vai trò trung gian để ClientHub gọi sang AgentHub
+    // Service đóng vai trò trung gian để ClientHub gọi sang AgentHub
     public class AgentCommandService
     {
         private readonly IHubContext<AgentHub> _agentHubContext;

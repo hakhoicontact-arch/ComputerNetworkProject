@@ -1,32 +1,43 @@
+// -----------------------------------------------------------------------------
+// File: ProtocolConstants.cs
+// Description:
+//      Định nghĩa toàn bộ constant dùng trong giao thức giao tiếp giữa
+//      Server <-> Agent <-> Client (SignalR + JSON actions).
+//
+//      Mục đích: Tránh trùng tên, gõ sai string, và giữ tính nhất quán
+//      của toàn bộ hệ thống.
+//
+// -----------------------------------------------------------------------------
+
 namespace RCS.Common.Protocols
 {
     public static class ProtocolConstants
     {
         // Hub Methods (Tên hàm mà Client/Server invoke)
-        public const string RegisterAgent = "RegisterAgent";
-        public const string ReceiveCommand = "ReceiveCommand";
-        public const string SendResponse = "SendResponse";
-        public const string SendUpdate = "SendUpdate";
-        public const string SendBinaryStream = "SendBinaryStream";
+        public const string RegisterAgent = "RegisterAgent";    // Client gọi để đăng ký với Server
+        public const string ReceiveCommand = "ReceiveCommand";  // Agent gọi để nhận lệnh từ Server
+        public const string SendResponse = "SendResponse";   // Agent gọi để gửi phản hồi về Server
+        public const string SendUpdate = "SendUpdate";  // Agent gọi để gửi cập nhật realtime (vd: keylogger)
+        public const string SendBinaryStream = "SendBinaryStream";  // Agent gọi để gửi dữ liệu nhị phân
 
         // Command Actions (Tên lệnh trong JSON)
-        public const string ActionAppList = "app_list";
-        public const string ActionAppStart = "app_start";
-        public const string ActionAppStop = "app_stop";
+        public const string ActionAppList = "app_list";     // Lấy danh sách ứng dụng đã cài đặt
+        public const string ActionAppStart = "app_start";   // Khởi động ứng dụng
+        public const string ActionAppStop = "app_stop";    // Dừng ứng dụng
         
-        public const string ActionProcessList = "process_list";
-        public const string ActionProcessStart = "process_start";
-        public const string ActionProcessStop = "process_stop";
+        public const string ActionProcessList = "process_list";  // Lấy danh sách process đang chạy
+        public const string ActionProcessStart = "process_start";   // Khởi động process
+        public const string ActionProcessStop = "process_stop";   // Dừng process
 
-        public const string ActionScreenshot = "screenshot";
+        public const string ActionScreenshot = "screenshot";    // Chụp ảnh
         
-        public const string ActionKeyloggerStart = "keylogger_start";
-        public const string ActionKeyloggerStop = "keylogger_stop";
+        public const string ActionKeyloggerStart = "keylogger_start";   // Bắt đầu ghi keylogger
+        public const string ActionKeyloggerStop = "keylogger_stop";    // Dừng ghi keylogger
         
-        public const string ActionWebcamOn = "webcam_on";
-        public const string ActionWebcamOff = "webcam_off";
+        public const string ActionWebcamOn = "webcam_on";   // Bật webcam
+        public const string ActionWebcamOff = "webcam_off";     // Tắt webcam
 
-        public const string ActionShutdown = "shutdown";
-        public const string ActionRestart = "restart";
+        public const string ActionShutdown = "shutdown";    // Tắt máy
+        public const string ActionRestart = "restart";   // Khởi động lại máy
     }
 }

