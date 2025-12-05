@@ -97,7 +97,7 @@ function handleBinaryStream(data, frameSize = 0, senderTicks = 0) {
         }
         
         cam.lastFrameTime = nowPerf;
-        updateWebcamStatsDisplay();
+        // updateWebcamStatsDisplay();
 
         // Render ảnh
         const video = document.getElementById('webcam-stream');

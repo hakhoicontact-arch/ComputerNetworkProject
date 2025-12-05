@@ -212,8 +212,8 @@ namespace RCS.Agent
                         await SendFragmentedImage(imageBytes);
                     }
 
-                    // 3. Nghỉ một chút để giữ FPS ổn định (không chiếm 100% CPU)
-                    await Task.Delay(SECOND_PER_FRAME, token);
+                    // // 3. Nghỉ một chút để giữ FPS ổn định (không chiếm 100% CPU)
+                    // await Task.Delay(1, token);
                 }
                 catch (TaskCanceledException) { break; } // Thoát êm khi bấm Stop
                 catch (ObjectDisposedException) { break; }
