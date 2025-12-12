@@ -42,10 +42,7 @@ namespace RCS.Server
             {
                 options.AddPolicy("AllowClient", policy =>
                 {
-                    policy.WithOrigins(
-                            "http://localhost:5500",  // Live Server (VSCode)
-                            "http://127.0.0.1:5500"   // Live Server IP
-                          )
+                    policy.SetIsOriginAllowed(origin => true)
                           .AllowAnyHeader()
                           .AllowAnyMethod()
                           .AllowCredentials(); // Bắt buộc phải có để SignalR hoạt động qua CORS

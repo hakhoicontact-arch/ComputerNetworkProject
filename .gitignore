@@ -1,0 +1,47 @@
+--- Cấu hình mặc định của Git cho dự án C#/.NET ---
+
+Thư mục build và output
+
+/bin/
+/obj/
+
+Các file cấu hình người dùng và IDE
+
+*.user
+*.suo
+*.sln.docstates
+
+Files do Visual Studio tạo ra (thường là tạm thời)
+
+*.vs/
+*.*proj.user
+*.*proj.filters
+
+Files nhị phân và log
+
+*.exe
+*.dll
+*.pdb
+*.log
+*.bak
+
+--- CẤU HÌNH LOẠI TRỪ CỤ THỂ CHO DỰ ÁN RCS ---
+
+1. Loại trừ thư mục triển khai/tự tạo (Theo yêu cầu)
+
+/RCS_Deploy/
+/deploy/
+/publish/
+/temp/
+
+2. Loại trừ các thư mục nhị phân và cache trong từng project
+
+RCS.Agent/bin/
+RCS.Agent/obj/
+RCS.Server/bin/
+RCS.Server/obj/
+
+3. Loại trừ các file Webcam tạm (nếu có)
+
+rcs_cam.bmp
+rcs_cam.jpg

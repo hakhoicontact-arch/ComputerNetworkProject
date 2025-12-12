@@ -190,12 +190,9 @@ namespace RCS.Server.Services
                     }
                     else return; // Nếu thiếu gói giữa chừng (lỗi logic) -> Hủy
                 }
-
-                // 3. Chuyển đổi sang Base64 để hiển thị được trên thẻ <img> HTML
-                string base64 = "data:image/jpeg;base64," + Convert.ToBase64String(fullImage);
                 
                 // 4. Gửi Broadcast tới tất cả Dashboard đang xem
-                await _hubContext.Clients.All.SendAsync("ReceiveBinaryChunk", base64, fullImage.Length, frame.SenderTicks);
+                await _hubContext.Clients.All.SendAsync("ReceiveBinaryChunk", fullImage, fullImage.Length, frame.SenderTicks);
             }
             catch (Exception ex)
             {

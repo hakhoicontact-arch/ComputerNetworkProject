@@ -1,16 +1,17 @@
 import { CONFIG, state } from './config.js';
 import { updateStatus } from './utils.js';
 
-export function startSignalR(username, password, callbacks) {
+export function startSignalR(url, username, password, callbacks) {
     return new Promise((resolve, reject) => {
-        const finalUrl = `${CONFIG.CONNECTION_URL}?username=${encodeURIComponent(username)}&access_token=${encodeURIComponent(password)}`;
+        const finalUrl = `${url}?username=${encodeURIComponent(username)}&access_token=${encodeURIComponent(password)}`;
 
+        // Tạo kết nối và lưu vào state ngay tại đây
         state.connection = new signalR.HubConnectionBuilder()
             .withUrl(finalUrl)
             .withAutomaticReconnect()
             .build();
 
-        // Gắn các callback từ Main Controller
+        // Gắn các callback
         state.connection.on("ReceiveResponse", callbacks.onResponse);
         state.connection.on("ReceiveUpdate", callbacks.onUpdate);
         state.connection.on("ReceiveBinaryChunk", callbacks.onBinary);
@@ -23,16 +24,22 @@ export function startSignalR(username, password, callbacks) {
             }
         });
 
-        state.connection.start().then(() => resolve()).catch(err => reject(err));
+        // SỬA: Trả về state.connection trong resolve để bên main.js nhận được
+        state.connection.start()
+            .then(() => resolve(state.connection)) 
+            .catch(err => reject(err));
     });
 }
 
 export async function sendCommand(action, params = {}) {
+    // Kiểm tra kỹ trạng thái trước khi gửi
     if (state.connection && state.connection.state === signalR.HubConnectionState.Connected) {
         try {
             await state.connection.invoke("SendToAgent", CONFIG.AGENT_ID, { action, params });
         } catch (err) {
             console.error("Lỗi gửi lệnh:", err);
         }
+    } else {
+        console.warn("Chưa kết nối hoặc mất kết nối tới Server.");
     }
 }

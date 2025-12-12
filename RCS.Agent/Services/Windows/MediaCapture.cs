@@ -20,8 +20,8 @@ namespace RCS.Agent.Services.Windows
         #region --- CONFIGURATION & CONSTANTS ---
 
         // Kích thước mong muốn cho khung hình Webcam
-        public const double FRAME_WIDTH = 1920;
-        public const double FRAME_HEIGHT = 1080;
+        public const double FRAME_WIDTH = 480*2;
+        public const double FRAME_HEIGHT = 270*2;
 
         #endregion
 
