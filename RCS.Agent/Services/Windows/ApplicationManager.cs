@@ -16,103 +16,205 @@ namespace RCS.Agent.Services.Windows
         /// </summary>
         public List<ApplicationInfo> GetInstalledApps()
         {
-            // Sử dụng Dictionary để lưu trữ ứng dụng, Key là tên ứng dụng.
-            // Giúp tự động loại bỏ các ứng dụng trùng tên hoặc cập nhật trạng thái nếu tìm thấy nhiều mục giống nhau.
-            var appDictionary = new Dictionary<string, ApplicationInfo>();
+            // Dùng Dictionary để loại bỏ trùng lặp (Key là đường dẫn EXE)
+            var uniqueApps = new Dictionary<string, ApplicationInfo>();
+            
+            // Lấy danh sách process đang chạy để check status
+            var runningProcesses = Process.GetProcesses();
+            var runningPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            
+            foreach(var p in runningProcesses)
+            {
+                try { 
+                    // Cố gắng lấy đường dẫn file đang chạy
+                    if(p.MainModule != null) runningPaths.Add(p.MainModule.FileName);
+                } catch { }
+            }
 
-            // --- BƯỚC 1: Lấy danh sách các tiến trình đang chạy ---
-            // Việc lấy trước danh sách này giúp tối ưu hiệu năng, không cần gọi Process.GetProcesses() nhiều lần trong vòng lặp.
-            var runningProcesses = Process.GetProcesses()
-                .Select(p => p.ProcessName.ToLower())
-                .ToHashSet(); // Dùng HashSet để tra cứu (Contains) nhanh hơn List.
+            // --- CHIẾN THUẬT 1: QUÉT APP PATHS (Nơi chứa Word, Excel, Outlook...) ---
+            ScanAppPaths(uniqueApps, runningPaths);
 
-            // --- BƯỚC 2: Định nghĩa các vị trí Registry cần quét ---
-            // Windows lưu thông tin gỡ cài đặt ở nhiều nơi khác nhau tùy thuộc vào loại App (32/64bit) và User (All/Current).
+            // --- CHIẾN THUẬT 2: QUÉT UNINSTALL KEYS (Nơi chứa các phần mềm cài đặt thông thường) ---
+            ScanUninstallKeys(uniqueApps, runningProcesses);
+
+            // Sắp xếp và trả về
+            return uniqueApps.Values.OrderBy(x => x.Name).ToList();
+        }
+
+        private void ScanAppPaths(Dictionary<string, ApplicationInfo> apps, HashSet<string> runningPaths)
+        {
+            string keyPath = @"SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths";
+            using (var key = Registry.LocalMachine.OpenSubKey(keyPath))
+            {
+                if (key != null)
+                {
+                    foreach (var subKeyName in key.GetSubKeyNames())
+                    {
+                        using (var subKey = key.OpenSubKey(subKeyName))
+                        {
+                            // App Paths luôn có giá trị (Default) là đường dẫn full tới exe
+                            var path = subKey.GetValue("") as string;
+                            AddAppIfValid(apps, runningPaths, path);
+                        }
+                    }
+                }
+            }
+        }
+
+        private void ScanUninstallKeys(Dictionary<string, ApplicationInfo> apps, Process[] runningProcs)
+        {
             var hives = new List<(RegistryKey Hive, string Path)>
             {
-                // 1. App 64-bit cài đặt cho toàn bộ máy (LocalMachine)
                 (Registry.LocalMachine, @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall"),
-                
-                // 2. App 32-bit cài đặt trên Windows 64-bit (WOW6432Node)
                 (Registry.LocalMachine, @"SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall"),
-                
-                // 3. App cài đặt riêng cho người dùng hiện tại (CurrentUser) - Ví dụ: Zalo, VSCode, Zoom...
                 (Registry.CurrentUser, @"Software\Microsoft\Windows\CurrentVersion\Uninstall")
             };
 
-            // --- BƯỚC 3: Duyệt qua từng Hive Registry ---
+            var runningNames = runningProcs.Select(p => p.ProcessName.ToLower()).ToHashSet();
+
             foreach (var (hive, path) in hives)
             {
                 try
                 {
                     using (var key = hive.OpenSubKey(path))
                     {
-                        // Nếu key không tồn tại (ít khi xảy ra), bỏ qua
                         if (key == null) continue;
-
-                        // Duyệt qua từng thư mục con (mỗi thư mục con đại diện cho một phần mềm)
                         foreach (var subKeyName in key.GetSubKeyNames())
                         {
                             using (var subKey = key.OpenSubKey(subKeyName))
                             {
-                                try
+                                // Lấy thông tin cơ bản
+                                var name = subKey.GetValue("DisplayName") as string;
+                                if (string.IsNullOrWhiteSpace(name)) continue;
+                                
+                                // Lọc rác
+                                if (IsSystemComponent(name)) continue;
+
+                                // Tìm đường dẫn EXE
+                                string exePath = GetExePathFromRegistry(subKey);
+
+                                // Nếu tìm thấy path thì thêm kiểu xịn
+                                if (!string.IsNullOrEmpty(exePath))
                                 {
-                                    // 3.1. Lấy tên hiển thị của ứng dụng
-                                    var name = subKey.GetValue("DisplayName") as string;
-                                    if (string.IsNullOrWhiteSpace(name)) continue; // Không có tên thì bỏ qua
-
-                                    // 3.2. Bộ lọc rác: Bỏ qua các bản vá lỗi hoặc driver update của Windows
-                                    if (name.StartsWith("Security Update") || name.StartsWith("Update for")) continue;
-
-                                    // 3.3. Tìm đường dẫn file .exe thực thi
-                                    // Ưu tiên theo thứ tự độ chính xác: Icon hiển thị -> Nơi cài đặt -> Chuỗi gỡ cài đặt
-                                    string exePath = GetExePath(subKey.GetValue("DisplayIcon") as string)
-                                                  ?? GetExePath(subKey.GetValue("InstallLocation") as string)
-                                                  ?? GetExePath(subKey.GetValue("UninstallString") as string);
-
-                                    // 3.4. Kiểm tra hợp lệ: Phải có đường dẫn và file đó phải tồn tại trên ổ cứng
-                                    if (!string.IsNullOrEmpty(exePath) && File.Exists(exePath))
-                                    {
-                                        // Lấy tên file exe (không đuôi) để so sánh với process đang chạy
-                                        string exeName = Path.GetFileNameWithoutExtension(exePath).ToLower();
-                                        string status = runningProcesses.Contains(exeName) ? "Running" : "Stopped";
-
-                                        // 3.5. Thêm vào danh sách kết quả
-                                        if (!appDictionary.ContainsKey(name))
-                                        {
-                                            // Nếu chưa có thì thêm mới
-                                            appDictionary[name] = new ApplicationInfo
-                                            {
-                                                Name = name,
-                                                Path = exePath,
-                                                Status = status
-                                            };
-                                        }
-                                        else if (status == "Running")
-                                        {
-                                            // Nếu đã có (trùng tên) nhưng lần quét này phát hiện nó đang chạy
-                                            // -> Cập nhật trạng thái đè lên cái cũ (ưu tiên hiển thị trạng thái Running)
-                                            appDictionary[name].Status = "Running";
-                                        }
-                                    }
+                                    AddAppIfValid(apps, null, exePath, name, runningNames);
                                 }
-                                catch 
-                                { 
-                                    // Bỏ qua lỗi khi đọc key con cụ thể, tiếp tục với key khác
+                                // Nếu không tìm thấy exe nhưng có tên trong Registry (VD: DLC, Plugin...)
+                                // Ta vẫn hiện ra nhưng không cho bấm Start (Path rỗng)
+                                else if (!apps.Values.Any(a => a.Name == name))
+                                {
+                                    // Logic phụ: Nếu không tìm thấy exe, coi như Stopped
+                                    // apps[name] = new ApplicationInfo { Name = name, Path = "", Status = "Installed" };
                                 }
                             }
                         }
                     }
                 }
-                catch 
-                { 
-                    // Bỏ qua lỗi khi mở Hive lớn, tiếp tục với Hive khác
+                catch { }
+            }
+        }
+
+        private void AddAppIfValid(Dictionary<string, ApplicationInfo> apps, HashSet<string> runningPaths, string path, string forceName = null, HashSet<string> runningNames = null)
+        {
+            path = CleanPath(path);
+            if (string.IsNullOrEmpty(path) || !File.Exists(path)) return;
+            if (!path.EndsWith(".exe", StringComparison.OrdinalIgnoreCase)) return;
+
+            // Kiểm tra trùng lặp bằng đường dẫn file
+            if (apps.ContainsKey(path)) return;
+
+            try 
+            {
+                // Lấy thông tin chi tiết từ file .exe
+                var info = FileVersionInfo.GetVersionInfo(path);
+                
+                // Ưu tiên: Tên ép buộc (từ Registry) > FileDescription (từ .exe) > ProductName > Tên file
+                string appName = forceName;
+                if (string.IsNullOrEmpty(appName)) appName = info.FileDescription;
+                if (string.IsNullOrEmpty(appName)) appName = info.ProductName;
+                if (string.IsNullOrEmpty(appName)) appName = Path.GetFileNameWithoutExtension(path);
+
+                // Lọc rác lần 2 (những file exe hệ thống không nên hiện)
+                if (string.IsNullOrEmpty(appName) || appName.Contains("Installer")) return;
+
+                // Kiểm tra trạng thái Running
+                string status = "Stopped";
+                
+                // Cách 1: Check theo đường dẫn chính xác (chính xác nhất)
+                if (runningPaths != null && runningPaths.Contains(path)) 
+                {
+                    status = "Running";
                 }
+                // Cách 2: Check theo tên process (nếu cách 1 không có dữ liệu runningPaths)
+                else if (runningNames != null)
+                {
+                    string procName = Path.GetFileNameWithoutExtension(path).ToLower();
+                    if (runningNames.Contains(procName)) status = "Running";
+                }
+
+                apps[path] = new ApplicationInfo
+                {
+                    Name = appName,
+                    Path = path,
+                    Status = status
+                };
+            }
+            catch { }
+        }
+
+        private string GetExePathFromRegistry(RegistryKey key)
+        {
+            // 1. DisplayIcon (Thường chuẩn nhất)
+            string p = CleanPath(key.GetValue("DisplayIcon") as string);
+            if (IsValidExe(p)) return p;
+
+            // 2. InstallLocation (Thường là thư mục, cần mò file exe)
+            string dir = CleanPath(key.GetValue("InstallLocation") as string);
+            if (!string.IsNullOrEmpty(dir) && Directory.Exists(dir))
+            {
+                // Thử tìm file exe trùng tên thư mục (VD: C:\App\Zalo\Zalo.exe)
+                string folderName = new DirectoryInfo(dir).Name;
+                string guessPath = Path.Combine(dir, folderName + ".exe");
+                if (IsValidExe(guessPath)) return guessPath;
+
+                // Thử tìm file exe lớn nhất trong thư mục (thường là file chính)
+                try {
+                    var largestExe = new DirectoryInfo(dir).GetFiles("*.exe")
+                                        .OrderByDescending(f => f.Length)
+                                        .FirstOrDefault();
+                    if (largestExe != null) return largestExe.FullName;
+                } catch { }
             }
 
-            // --- BƯỚC 4: Sắp xếp và trả về kết quả ---
-            return appDictionary.Values.OrderBy(x => x.Name).ToList();
+            return null;
         }
+
+        private bool IsValidExe(string path)
+        {
+            return !string.IsNullOrEmpty(path) && File.Exists(path) && path.EndsWith(".exe", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private string CleanPath(string raw)
+        {
+            if (string.IsNullOrEmpty(raw)) return null;
+            string s = raw.Trim();
+            if (s.StartsWith("\"")) 
+            {
+                int end = s.IndexOf("\"", 1);
+                if (end > 0) s = s.Substring(1, end - 1);
+            }
+            if (s.Contains(",")) s = s.Split(',')[0]; // Icon index
+            return s;
+        }
+
+        private bool IsSystemComponent(string name)
+        {
+            if (string.IsNullOrEmpty(name)) return true;
+            return name.StartsWith("Security Update") || 
+                   name.StartsWith("Update for") ||
+                   name.StartsWith("Microsoft Visual C++") || // Ẩn thư viện runtime cho gọn
+                   name.Contains("Redistributable");
+        }
+
 
         /// <summary>
         /// Khởi động một ứng dụng dựa trên đường dẫn file .exe.
@@ -138,39 +240,43 @@ namespace RCS.Agent.Services.Windows
         /// <param name="pathOrName">Đường dẫn file hoặc tên ứng dụng.</param>
         public void StopApp(string pathOrName)
         {
-            try
+            try 
             {
-                // Cách 1: Tìm process bằng tên file exe (chính xác nhất)
                 string processName = Path.GetFileNameWithoutExtension(pathOrName);
+                
+                // Tìm tất cả process có tên trùng
                 var procs = Process.GetProcessesByName(processName);
-
-                // Cách 2: Nếu không tìm thấy bằng tên file, thử tìm bằng tiêu đề cửa sổ (Fallback)
+                
+                // Fallback: Tìm theo tên cửa sổ nếu không tìm thấy exe
                 if (procs.Length == 0)
                 {
-                    procs = Process.GetProcesses()
-                        .Where(p => p.MainWindowTitle.Contains(pathOrName))
-                        .ToArray();
+                    procs = Process.GetProcesses().Where(p => p.MainWindowTitle.Contains(pathOrName)).ToArray();
                 }
 
-                if (procs.Length > 0)
+                foreach (var p in procs) 
                 {
-                    foreach (var p in procs)
+                    try 
                     {
-                        try
+                        // Bước 1: Yêu cầu đóng nhẹ nhàng (giống bấm nút X)
+                        p.CloseMainWindow();
+                        
+                        // Bước 2: Chờ tối đa 1 giây xem nó có chịu tắt không
+                        if (!p.WaitForExit(1000)) 
                         {
-                            // Ưu tiên dùng CloseMainWindow để gửi lệnh đóng (giống bấm nút X).
-                            // Việc này cho phép ứng dụng lưu dữ liệu hoặc hiện hộp thoại "Do you want to save?".
-                            // Nếu ứng dụng chạy ngầm (không có UI) hoặc bị treo, hàm này trả về false.
-                            if (!p.CloseMainWindow())
-                            {
-                                // Khi đóng nhẹ nhàng thất bại, dùng Kill để cưỡng chế tắt ngay lập tức.
-                                p.Kill();
-                            }
+                            // Bước 3: Nếu lì lợm không tắt -> KILL ngay lập tức
+                            p.Kill();
+                            
+                            // Bước 4: Chờ Windows dọn dẹp xong process này
+                            p.WaitForExit(); 
                         }
-                        catch { }
+                    }
+                    catch 
+                    {
+                        // Nếu có lỗi (ví dụ Access Denied), cố gắng Kill lần nữa
+                        try { p.Kill(); } catch { }
                     }
                 }
-            }
+            } 
             catch { }
         }
 

