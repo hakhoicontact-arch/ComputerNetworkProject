@@ -220,17 +220,37 @@ namespace RCS.Agent.Services.Windows
         /// Khởi động một ứng dụng dựa trên đường dẫn file .exe.
         /// </summary>
         /// <param name="path">Đường dẫn đầy đủ tới file thực thi.</param>
-        public void StartApp(string path)
+        public void StartApp(string nameOrPath)
         {
-            try
+            // Trường hợp 1: Nếu client gửi lên đường dẫn file tồn tại -> Chạy luôn
+            if (File.Exists(nameOrPath))
             {
+                RunExe(nameOrPath);
+                return;
+            }
+
+            // Trường hợp 2: Nếu client gửi Tên -> Quét lại danh sách để tìm đường dẫn
+            // (Tuy hơi chậm xíu nhưng đảm bảo tìm đúng cái đang hiện trên UI)
+            var allApps = GetInstalledApps();
+            var targetApp = allApps.FirstOrDefault(a => a.Name.Equals(nameOrPath, StringComparison.OrdinalIgnoreCase));
+
+            if (targetApp != null && !string.IsNullOrEmpty(targetApp.Path))
+            {
+                RunExe(targetApp.Path);
+            }
+        }
+
+        private void RunExe(string path)
+        {
+            try 
+            { 
                 Process.Start(new ProcessStartInfo
                 {
                     FileName = path,
-                    UseShellExecute = true, // Cần thiết để chạy như một lệnh Shell, tránh lỗi quyền hạn
-                    WorkingDirectory = Path.GetDirectoryName(path) // Đặt thư mục làm việc là thư mục chứa file exe để load dll ổn định
+                    UseShellExecute = true, 
+                    WorkingDirectory = Path.GetDirectoryName(path) 
                 });
-            }
+            } 
             catch { }
         }
 

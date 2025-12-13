@@ -6,13 +6,35 @@ export function renderAppLayout() {
     return `
         <div class="space-y-4">
             <div class="flex items-center space-x-3">
-                <button id="list-apps-btn" class="btn-primary bg-blue-600 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-700 transition-all">
-                    <i class="fas fa-sync-alt mr-2"></i> Làm Mới
-                </button>
-                <input id="app-start-name" type="text" placeholder="Tên ứng dụng (.exe) để mở" class="p-2 border border-gray-300 rounded-lg flex-grow max-w-xs">
-                <button id="start-app-btn" class="btn-primary bg-green-600 text-white px-4 py-2 rounded-lg shadow hover:bg-green-700 transition-all">
-                    <i class="fas fa-play mr-2"></i> Mở App
-                </button>
+                <button id="list-apps-btn" class="btn-primary bg-blue-600 text-white px-4 py-2 rounded-lg shadow-md shadow-blue-200 hover:bg-blue-700 transition-all">Làm Mới</button>
+                
+                <!-- THÊM Ô TÌM KIẾM (SEARCH APP) -->
+                <div class="uiv-search-box flex-grow">
+                    <svg fill="#6b7280" viewBox="0 0 1920 1920" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M790.588 1468.235c-373.722 0-677.647-303.924-677.647-677.647 0-373.722 303.925-677.647 677.647-677.647 373.723 0 677.647 303.925 677.647 677.647 0 373.723-303.924 677.647-677.647 677.647Zm596.781-160.715c120.396-138.692 193.807-319.285 193.807-516.932C1581.176 354.748 1226.428 0 790.588 0S0 354.748 0 790.588s354.748 790.588 790.588 790.588c197.647 0 378.24-73.411 516.932-193.807l516.028 516.142 79.963-79.963-516.142-516.028Z" fill-rule="evenodd"></path>
+                    </svg>
+                    
+                    <input 
+                        id="app-search" 
+                        type="text" 
+                        placeholder="Tìm ứng dụng..." 
+                        class="uiv-search-input uiv-full-width"
+                    >
+                </div>
+                
+                <div class="uiv-search-box ml-4">
+                    <svg fill="#6b7280" viewBox="0 0 1920 1920" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M790.588 1468.235c-373.722 0-677.647-303.924-677.647-677.647 0-373.722 303.925-677.647 677.647-677.647 373.723 0 677.647 303.925 677.647 677.647 0 373.723-303.924 677.647-677.647 677.647Zm596.781-160.715c120.396-138.692 193.807-319.285 193.807-516.932C1581.176 354.748 1226.428 0 790.588 0S0 354.748 0 790.588s354.748 790.588 790.588 790.588c197.647 0 378.24-73.411 516.932-193.807l516.028 516.142 79.963-79.963-516.142-516.028Z" fill-rule="evenodd"></path>
+                    </svg>
+
+                    <input 
+                        id="app-search" 
+                        type="text" 
+                        placeholder="Nhập tên để mở" 
+                        class="uiv-search-input uiv-anim-width-app-search"
+                    >
+                </div>
+                <button id="start-app-btn" class="btn-primary bg-green-600 text-white px-4 py-2 shadow-md shadow-green-200 rounded-lg">Mở</button>
             </div>
             <div class="table-container bg-gray-50 rounded-lg shadow-inner">
                 <table class="min-w-full divide-y divide-gray-200">
@@ -42,7 +64,7 @@ export function updateAppTable(apps) {
 
     tbody.innerHTML = apps.map(app => {
         const isRunning = app.status === 'Running';
-        const btnColor = isRunning ? 'bg-red-50 text-red-600 hover:bg-red-100' : 'bg-green-50 text-green-600 hover:bg-green-100';
+        const btnColor = isRunning ? 'bg-red-50 text-red-600 shadow-red-100 hover:bg-red-100' : 'bg-green-50 text-green-600 shadow-green-200 hover:bg-green-100';
         const btnIcon = isRunning ? 'fa-stop-circle' : 'fa-play-circle';
         const btnText = isRunning ? 'Đóng' : 'Mở';
         const btnAction = isRunning ? 'stop-app' : 'start-app';
@@ -62,7 +84,8 @@ export function updateAppTable(apps) {
                 </span>
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
-                <button data-action="${btnAction}" data-id="${app.path}" data-name="${app.name}" class="${btnColor} px-4 py-1.5 rounded-lg transition-colors shadow-sm flex items-center mx-auto w-24 justify-center font-semibold">
+                <!-- SỬA TẠI ĐÂY: data-id="${app.name}" thay vì app.path -->
+                <button data-action="${btnAction}" data-id="${app.name}" class="${btnColor} px-4 py-1.5 rounded-lg transition-colors shadow-md flex items-center mx-auto w-24 justify-center font-semibold">
                     <i class="fas ${btnIcon} mr-2"></i> ${btnText}
                 </button>
             </td>
@@ -76,11 +99,22 @@ export function renderProcessLayout() {
         <div class="space-y-4">
             <div class="flex flex-wrap items-center justify-between gap-4">
                 <div class="flex items-center space-x-3">
-                    <button id="list-processes-btn" class="btn-primary bg-blue-600 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-700 transition-all">
+                    <button id="list-processes-btn" class="btn-primary bg-blue-600 text-white px-4 py-2 rounded-lg shadow-md shadow-blue-200 hover:bg-blue-700 transition-all">
                         <i class="fas fa-sync-alt mr-2"></i> Cập Nhật
                     </button>
-                    <input id="process-search" type="text" placeholder="Tìm PID hoặc Tên..." class="p-2 border border-gray-300 rounded-lg w-48">
-                    <button id="start-process-btn" class="btn-primary bg-green-600 text-white px-4 py-2 rounded-lg shadow hover:bg-green-700 transition-all">
+                    <div class="uiv-search-box ml-4">
+                        <svg fill="#6b7280" viewBox="0 0 1920 1920" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M790.588 1468.235c-373.722 0-677.647-303.924-677.647-677.647 0-373.722 303.925-677.647 677.647-677.647 373.723 0 677.647 303.925 677.647 677.647 0 373.723-303.924 677.647-677.647 677.647Zm596.781-160.715c120.396-138.692 193.807-319.285 193.807-516.932C1581.176 354.748 1226.428 0 790.588 0S0 354.748 0 790.588s354.748 790.588 790.588 790.588c197.647 0 378.24-73.411 516.932-193.807l516.028 516.142 79.963-79.963-516.142-516.028Z" fill-rule="evenodd"></path>
+                        </svg>
+
+                        <input 
+                            id="process-search" 
+                            type="text" 
+                            placeholder="Tìm PID hoặc Tên" 
+                            class="uiv-search-input uiv-anim-width"
+                        >
+                    </div>
+                    <button id="start-process-btn" class="btn-primary bg-green-600 text-white px-4 py-2 rounded-lg shadow-md shadow-green-200 hover:bg-green-700 transition-all">
                         <i class="fas fa-plus mr-2"></i> Mở Process
                     </button>
                     <input id="process-start-path" type="hidden"> </div>
@@ -148,7 +182,7 @@ export function updateProcessTable(processes) {
 export function renderScreenshotView() {
     return `
         <div class="space-y-6 text-center">
-            <button id="capture-screenshot-btn" class="btn-primary bg-blue-600 text-white px-6 py-3 rounded-lg shadow hover:bg-blue-700 transition-all font-semibold">
+            <button id="capture-screenshot-btn" class="btn-primary bg-blue-600 text-white px-6 py-3 rounded-lg shadow-md shadow-blue-200 hover:bg-blue-700 transition-all font-semibold">
                 <i class="fas fa-camera mr-2"></i> Chụp Màn Hình
             </button>
             <button id="save-screenshot-btn" class="hidden btn-primary bg-green-600 text-white px-6 py-3 rounded-lg shadow hover:bg-green-700 transition-all font-semibold">
@@ -166,9 +200,9 @@ export function renderKeyloggerDisplay() {
     return `
         <div class="space-y-4">
             <div class="flex space-x-3">
-                <button id="start-keylogger-btn" class="bg-green-600 text-white px-4 py-2 rounded-lg font-semibold">Bắt Đầu</button>
-                <button id="stop-keylogger-btn" class="bg-red-600 text-white px-4 py-2 rounded-lg font-semibold">Dừng</button>
-                <button id="clear-keylogger-btn" class="bg-gray-500 text-white px-4 py-2 rounded-lg font-semibold">Xóa</button>
+                <button id="start-keylogger-btn" class="bg-green-600 text-white px-4 py-2 rounded-lg font-semibold shadow-md shadow-green-200 hover:bg-green-700 transition-all">Bắt Đầu</button>
+                <button id="stop-keylogger-btn" class="bg-red-600 text-white px-4 py-2 rounded-lg font-semibold shadow-md shadow-red-250 hover:bg-red-700 transition-all">Dừng</button>
+                <button id="clear-keylogger-btn" class="bg-gray-500 text-white px-4 py-2 rounded-lg font-semibold shadow-md shadow-gray-300 hover:bg-gray-600 transition-all">Xóa</button>
             </div>
             <p id="keylogger-status" class="text-sm font-bold text-blue-600">Trạng thái: Đang chờ lệnh...</p>
             <textarea id="keylogger-log" class="w-full h-80 p-4 border rounded-lg font-mono text-sm bg-gray-50" readonly></textarea>
@@ -231,11 +265,30 @@ export function renderSystemControls() {
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl mx-auto pt-10">
             <div class="p-6 bg-red-50 rounded-lg shadow-lg border-l-4 border-red-500">
                 <h3 class="text-xl font-bold text-red-800 mb-3">Tắt Nguồn</h3>
-                <button id="shutdown-btn" class="w-full btn-primary bg-red-600 text-white px-4 py-2 rounded-lg font-semibold shadow hover:bg-red-700">SHUTDOWN</button>
+                
+                <button id="shutdown-btn" class="flip-btn w-full h-12 bg-red-600 hover:bg-red-700 text-white rounded-lg shadow">
+                    <div class="flip-content-front">
+                        <span>SHUTDOWN</span>
+                    </div>
+                    <div class="flip-content-back">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                        <span class="ml-2 font-bold">BYE!</span>
+                    </div>
+                </button>
             </div>
+
             <div class="p-6 bg-yellow-50 rounded-lg shadow-lg border-l-4 border-yellow-500">
                 <h3 class="text-xl font-bold text-yellow-800 mb-3">Khởi Động Lại</h3>
-                <button id="restart-btn" class="w-full btn-primary bg-yellow-600 text-white px-4 py-2 rounded-lg font-semibold shadow hover:bg-yellow-700">RESTART</button>
+                
+                <button id="restart-btn" class="flip-btn w-full h-12 bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg shadow">
+                    <div class="flip-content-front">
+                        <span>RESTART</span>
+                    </div>
+                    <div class="flip-content-back">
+                        <svg class="w-6 h-6 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                        <span class="ml-2 font-bold">LOADING...</span>
+                    </div>
+                </button>
             </div>
         </div>
     `;

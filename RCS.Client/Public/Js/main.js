@@ -287,6 +287,25 @@ function attachViewListeners(view) {
                 sendCommand('app_start', { name: startBtn.dataset.id });
             }
         });
+        const searchInput = document.getElementById('app-search');
+        if (searchInput) {
+            searchInput.addEventListener('keyup', (e) => {
+                const term = e.target.value.toLowerCase();
+                const rows = document.querySelectorAll('#app-list-body tr');
+                
+                rows.forEach(row => {
+                    // Lấy text của cột Tên (cột đầu tiên)
+                    const appName = row.querySelector('td:first-child')?.textContent.toLowerCase() || "";
+                    
+                    // Hiện nếu tên chứa từ khóa, ẩn nếu không chứa
+                    if (appName.includes(term)) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+            });
+        }
     }
     else if (view === 'processes') {
         const btnList = document.getElementById('list-processes-btn');
@@ -344,13 +363,33 @@ function attachViewListeners(view) {
     }
     else if (view === 'webcam') {
         document.getElementById('webcam-on-btn').onclick = () => {
-            // SỬA: Bật cờ streaming khi nhấn nút Bật
-            state.webcam.isStreaming = true;
-            sendCommand('webcam_on');
-            const ph = document.getElementById('webcam-placeholder');
-            if(ph) ph.innerHTML = '<div class="loader mb-2"></div> Đang kết nối...';
-            updateWebcamStatsDisplay();
-        };
+        // Bật cờ streaming
+        state.webcam.isStreaming = true;
+        sendCommand('webcam_on');
+        
+        const ph = document.getElementById('webcam-placeholder');
+        if (ph) {
+            // Chèn HTML loader mới với class đã đổi tên
+            ph.innerHTML = `
+                <div class="wc-load-wrapper">
+                    <div class="wc-load-circle"></div>
+                    <div class="wc-load-circle"></div>
+                    <div class="wc-load-circle"></div>
+                    <div class="wc-load-shadow"></div>
+                    <div class="wc-load-shadow"></div>
+                    <div class="wc-load-shadow"></div>
+                </div>
+                <div class="text-center mt-4 text-white">Đang kết nối...</div>
+            `;
+            
+            // Đảm bảo container cha có Flexbox để căn giữa loader (nếu chưa có trong CSS gốc)
+            ph.style.display = 'flex';
+            ph.style.flexDirection = 'column';
+            ph.style.justifyContent = 'center';
+            ph.style.alignItems = 'center';
+        }
+        updateWebcamStatsDisplay();
+    };
         document.getElementById('webcam-off-btn').onclick = () => sendCommand('webcam_off');
         document.getElementById('toggle-stats-btn').onclick = () => {
             state.webcam.isStatsVisible = !state.webcam.isStatsVisible;
@@ -460,3 +499,45 @@ document.addEventListener('DOMContentLoaded', () => {
         if(ipField) ipField.value = savedIp;
     }
 });
+
+function enableAutoResize(inputId) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+
+    // 1. Tạo một thẻ span ẩn để đo độ rộng chữ
+    // Chúng ta phải sao chép font chữ của input sang span này để đo cho chuẩn
+    const measureSpan = document.createElement('span');
+    measureSpan.style.visibility = 'hidden';
+    measureSpan.style.position = 'absolute';
+    measureSpan.style.whiteSpace = 'pre'; // Giữ nguyên khoảng trắng
+    measureSpan.style.pointerEvents = 'none';
+    document.body.appendChild(measureSpan);
+
+    const updateWidth = () => {
+        // Copy style font từ input sang span đo
+        const styles = window.getComputedStyle(input);
+        measureSpan.style.font = styles.font;
+        measureSpan.style.fontSize = styles.fontSize;
+        measureSpan.style.fontFamily = styles.fontFamily;
+        measureSpan.style.fontWeight = styles.fontWeight;
+        measureSpan.style.letterSpacing = styles.letterSpacing;
+
+        // Lấy nội dung (nếu rỗng thì lấy placeholder để đo độ rộng tối thiểu)
+        measureSpan.textContent = input.value || input.placeholder;
+
+        // Tính toán độ rộng: Độ rộng chữ + Padding trái (icon) + Padding phải
+        // 40px là padding-left (chỗ icon), 20px là padding-right dư ra cho đẹp
+        const newWidth = measureSpan.offsetWidth + 60; 
+
+        // Gán độ rộng mới
+        input.style.width = `${newWidth}px`;
+    };
+
+    // Lắng nghe sự kiện gõ phím
+    input.addEventListener('input', updateWidth);
+    
+    // Gọi 1 lần lúc đầu để setup
+    updateWidth();
+}
+
+enableAutoResize('process-search');
