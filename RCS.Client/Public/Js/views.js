@@ -174,6 +174,97 @@ export function renderProcessLayout() {
                 </div>
             </div>
 
+
+
+
+
+            <!-- SYSTEM INFO BOARD (Bảng thông tin chi tiết) -->
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
+                <div class="flex items-center gap-2 mb-4 border-b border-slate-100 pb-2">
+                    <i class="fas fa-desktop text-blue-600"></i>
+                    <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wide">System Specification</h3>
+                    <span id="spec-uptime" class="ml-auto text-xs font-mono text-green-600 bg-green-50 px-2 py-1 rounded">Uptime: ...</span>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 text-sm">
+                    <!-- CPU -->
+                    <div class="space-y-1">
+                        <p class="text-xs text-slate-400 font-bold uppercase">Processor (CPU)</p>
+                        <div class="flex items-start gap-2">
+                            <i class="fab fa-intel text-blue-400 mt-1"></i> <!-- Icon minh họa -->
+                            <div>
+                                <p id="spec-cpu-name" class="font-semibold text-slate-800">Loading...</p>
+                                <p id="spec-cpu-cores" class="text-xs text-slate-500 font-mono">-</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- RAM -->
+                    <div class="space-y-1">
+                        <p class="text-xs text-slate-400 font-bold uppercase">Memory (RAM)</p>
+                        <div class="flex items-start gap-2">
+                            <i class="fas fa-memory text-purple-400 mt-1"></i>
+                            <div>
+                                <p id="spec-ram-total" class="font-semibold text-slate-800">Loading...</p>
+                                <p id="spec-ram-detail" class="text-xs text-slate-500 font-mono">-</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- GPU -->
+                    <div class="space-y-1">
+                        <p class="text-xs text-slate-400 font-bold uppercase">Graphics (GPU)</p>
+                        <div class="flex items-start gap-2">
+                            <i class="fas fa-tv text-green-400 mt-1"></i>
+                            <div>
+                                <p id="spec-gpu" class="font-semibold text-slate-800">Loading...</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- NETWORK & OS -->
+                    <div class="space-y-1">
+                        <p class="text-xs text-slate-400 font-bold uppercase">System & Network</p>
+                        <div class="flex items-start gap-2">
+                            <i class="fab fa-windows text-blue-400 mt-1"></i>
+                            <div>
+                                <p id="spec-os" class="font-semibold text-slate-800 text-xs">Loading...</p>
+                                <p id="spec-ip" class="text-xs text-slate-500 font-mono mt-0.5">IP: -</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- DISK BAR -->
+                <div class="mt-4 pt-3 border-t border-slate-100">
+                    <p class="text-xs text-slate-400 font-bold uppercase mb-2">Storage</p>
+                    <div class="flex items-center gap-2">
+                        <i class="fas fa-hdd text-orange-400"></i>
+                        <p id="spec-disk" class="text-xs font-mono text-slate-600 flex-grow">Loading drives...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. RESOURCE MONITOR (Thanh phần trăm Realtime) -->
+            <div class="grid grid-cols-3 gap-4">
+                 <!-- Giữ nguyên phần CPU/RAM/Disk Card cũ của bạn ở đây để hiển thị % realtime -->
+                 <!-- (Tôi không paste lại để tiết kiệm dòng, bạn dùng lại đoạn HTML cũ nhé) -->
+                 <div class="bg-blue-50 p-3 rounded-lg border border-blue-100">
+                    <div class="flex justify-between mb-1">
+                        <span class="text-xs font-bold text-blue-600">CPU Load</span>
+                        <span id="total-cpu" class="text-xs font-bold text-blue-700">0%</span>
+                    </div>
+                    <div class="w-full bg-blue-200 h-1.5 rounded-full overflow-hidden">
+                        <div id="bar-cpu" class="bg-blue-500 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+                    </div>
+                </div>
+                <!-- ... RAM & Disk cards ... -->
+            </div>
+
+
+
+
+
             <!-- 2. TOOLBAR -->
             <div class="flex flex-wrap items-center justify-between gap-4">
                 <div class="flex items-center space-x-3">

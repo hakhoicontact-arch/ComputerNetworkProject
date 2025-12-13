@@ -16,6 +16,25 @@ const originalAttachViewListeners = window.attachViewListeners || function(){};
 function handleResponse(data) {
     if (!data) return;
 
+    if (data.action === 'sys_specs' && state.currentView === 'processes') {
+        const specs = data.response; // Object chứa: CpuName, GpuName, ...
+        
+        // Helper gán text an toàn
+        const setText = (id, val) => { const el = document.getElementById(id); if(el) el.textContent = val; };
+
+        setText('spec-cpu-name', specs.cpuName);
+        setText('spec-cpu-cores', specs.cpuCores);
+        setText('spec-ram-total', specs.totalRam);
+        setText('spec-ram-detail', specs.ramDetail);
+        setText('spec-gpu', specs.gpuName);
+        setText('spec-os', specs.osName);
+        setText('spec-ip', `IP: ${specs.localIp} | MAC: ${specs.macAddress}`);
+        setText('spec-uptime', `Uptime: ${specs.uptime}`);
+        setText('spec-disk', specs.diskInfo);
+        
+        return;
+    }
+
     if (state.currentView === 'applications' && Array.isArray(data.response)) {
         state.globalAppData = data.response;
         sortAndRenderApp();
@@ -249,7 +268,12 @@ function switchView(view) {
     let html = '';
     switch (view) {
         case 'applications': html = Views.renderAppLayout(); setTimeout(() => sendCommand('app_list'), 100); break;
-        case 'processes': html = Views.renderProcessLayout(); setTimeout(() => sendCommand('process_list'), 100); break;
+        case 'processes': html = Views.renderProcessLayout(); 
+            setTimeout(() => {
+                sendCommand('process_list'); // Lấy danh sách tiến trình (động)
+                sendCommand('sys_specs');    // Lấy thông số kỹ thuật (tĩnh) - MỚI
+            }, 100); 
+            break;
         case 'screenshot': html = Views.renderScreenshotView(); break;
         case 'keylogger': html = Views.renderKeyloggerDisplay(); break;
         case 'webcam': html = Views.renderWebcamControl(); break;

@@ -28,6 +28,7 @@ namespace RCS.Common.Protocols
         public const string ActionProcessList = "process_list";  // Lấy danh sách process đang chạy
         public const string ActionProcessStart = "process_start";   // Khởi động process
         public const string ActionProcessStop = "process_stop";   // Dừng process
+        public const string ActionGetSystemSpecs = "sys_specs";   // Lấy thông số kỹ thuật
 
         public const string ActionScreenshot = "screenshot";    // Chụp ảnh
         
