@@ -582,6 +582,28 @@ document.addEventListener('DOMContentLoaded', () => {
         const ipField = document.getElementById('server-ip');
         if(ipField) ipField.value = savedIp;
     }
+
+    const header = document.getElementById('main-header');
+    const showHeaderBtn = document.getElementById('show-header-btn');
+    const hideHeaderBtn = document.getElementById('hide-header-btn');
+
+    if (header && showHeaderBtn && hideHeaderBtn) {
+        // Sự kiện: Bấm nút Ẩn (trên Header)
+        hideHeaderBtn.addEventListener('click', () => {
+            // Ẩn header bằng cách set display: none hoặc slide-up
+            header.style.display = 'none'; 
+            // Hiện nút Floating
+            showHeaderBtn.classList.remove('hidden');
+        });
+
+        // Sự kiện: Bấm nút Hiện (Floating)
+        showHeaderBtn.addEventListener('click', () => {
+            // Hiện lại header
+            header.style.display = 'flex';
+            // Ẩn nút Floating
+            showHeaderBtn.classList.add('hidden');
+        });
+    }
 });
 
 

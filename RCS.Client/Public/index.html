@@ -21,6 +21,9 @@
 </head>
 
 <body class="bg-slate-50 text-slate-800">
+    <button id="show-header-btn" class="hidden fixed top-2 right-4 z-50 bg-white/90 backdrop-blur text-blue-600 p-2 rounded-full shadow-lg border border-slate-200 hover:scale-110 transition-all duration-300" title="Hiện Menu">
+        <i class="fas fa-chevron-down text-xl"></i>
+    </button>
 
     <div id="login-screen" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900 bg-opacity-90 backdrop-blur-sm transition-all duration-500">
         <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md border border-slate-700">
@@ -85,7 +88,7 @@
 
     <div id="app" class="min-h-screen flex flex-col max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 hidden opacity-0 transition-opacity duration-500">
         
-        <header class="bg-white/80 backdrop-blur-md border border-slate-200 shadow-sm rounded-2xl p-5 mb-6 z-20 flex justify-between items-center transition-all duration-300 hover:shadow-md">
+        <header id="main-header" class="bg-white/80 backdrop-blur-md border border-slate-200 shadow-sm rounded-2xl p-5 mb-6 z-20 flex justify-between items-center transition-all duration-300 hover:shadow-md">
             
             <div class="flex items-center gap-4">
                 <div class="bg-blue-600 text-white p-3 rounded-xl shadow-blue-200 shadow-lg">
@@ -120,6 +123,10 @@
                             </svg>
                         </div>
                         <div id="logout-text">Logout</div>
+                    </button>
+                    <!-- NÚT ẨN HEADER -->
+                    <button id="hide-header-btn" class="bg-slate-100 text-slate-500 p-3 rounded-xl hover:bg-slate-200 transition-colors" title="Ẩn thanh này">
+                        <i class="fas fa-chevron-up"></i>
                     </button>
                 </div>
             </div>
