@@ -76,6 +76,8 @@ export function getEmptyRow(colspan) {
 // BỘ XỬ LÝ TELEX & KÝ TỰ (Advanced Text Processor)
 // =========================================================
 
+let isShiftPending = false;
+
 // Bảng dịch mã phím C# (.NET Keys Enum) sang ký tự thực tế
 const KEY_MAPPING = {
     // Hàng phím số (nếu Agent gửi D0-D9)
@@ -101,6 +103,17 @@ const KEY_MAPPING = {
     'Decimal': '.', 'Add': '+', 'Subtract': '-', 'Multiply': '*', 'Divide': '/',
     'OemPipe': '\\', 'Oem4': '[', 'OemSemicolon': ';', 'Oem2': '/'
 };
+
+// Bảng Map ký tự khi giữ Shift (Shift + Key = NewKey)
+const SHIFT_SYMBOL_MAP = {
+    '1': '!', '2': '@', '3': '#', '4': '$', '5': '%', '6': '^', '7': '&', '8': '*', '9': '(', '0': ')',
+    '`': '~',
+    '-': '_', '=': '+',
+    '[': '{', ']': '}', '\\': '|',
+    ';': ':', "'": '"',
+    ',': '<', '.': '>', '/': '?'
+};
+
 // Bảng Telex và Dấu thanh (Giữ nguyên)
 const TELEX_MAP = {
     'aa': 'â', 'aw': 'ă', 'ee': 'ê', 'oo': 'ô', 'ow': 'ơ', 'dd': 'đ', 'uw': 'ư',
@@ -126,6 +139,13 @@ export function processInputKey(currentText, rawKey, mode) {
         cleanKey = rawKey.slice(1, -1);
     }
 
+    // --- XỬ LÝ SHIFT ---
+    // Nếu nhận được phím Shift, bật cờ và không in gì cả
+    if (cleanKey === 'SHIFT' || cleanKey === 'Shift' || cleanKey === 'LShiftKey' || cleanKey === 'RShiftKey') {
+        isShiftPending = true;
+        return currentText;
+    }
+
     // Bước 2: Kiểm tra xem có trong bảng Mapping không
     // Nếu có (ví dụ OemComma), đổi thành ","
     if (KEY_MAPPING[cleanKey]) {
@@ -145,6 +165,21 @@ export function processInputKey(currentText, rawKey, mode) {
     }
 
     // --- ĐẾN ĐÂY LÀ CHẮC CHẮN KÝ TỰ IN ĐƯỢC (Chữ, Số, Dấu) ---
+
+    // --- ÁP DỤNG SHIFT NẾU CÓ ---
+    if (isShiftPending) {
+        // Nếu là ký tự đặc biệt (số, dấu) -> Map sang ký tự Shift tương ứng
+        if (SHIFT_SYMBOL_MAP[cleanKey]) {
+            cleanKey = SHIFT_SYMBOL_MAP[cleanKey];
+        } 
+        // Nếu là chữ cái -> Viết hoa (Phòng hờ nếu C# gửi chữ thường)
+        else if (cleanKey.length === 1) {
+            cleanKey = cleanKey.toUpperCase();
+        }
+        
+        // Tắt cờ Shift sau khi đã áp dụng cho 1 ký tự
+        isShiftPending = false;
+    }
 
     // Nếu không bật Telex -> Cộng thẳng vào
     if (mode !== 'telex') return currentText + cleanKey;
@@ -193,4 +228,41 @@ export function processInputKey(currentText, rawKey, mode) {
 
     // Không phải quy tắc telex nào -> Cộng bình thường
     return currentText + cleanKey;
+}
+
+
+
+export const pad3 = (num) => num.toString().padStart(3, " ");
+
+
+
+export function renderDiskInfo(rawString) {
+    // 1. Parsing: Tách chuỗi thô thành các nhóm ổ đĩa
+    // Regex giải thích: Tìm ký tự ổ đĩa (A-Z) theo sau là :\, bắt nhóm Free và Total
+    const regex = /([A-Z]:\\)\s\[Free:\s(\d+)GB\s\/\s(\d+)GB\]/g;
+    let match;
+    let res = "";
+
+    while ((match = regex.exec(rawString)) !== null) {
+        // match[1]: Tên ổ (C:\)
+        // match[2]: Free (61)
+        // match[3]: Total (176)
+        
+        const driveName = match[1];
+        const freeGB = parseInt(match[2]);
+        const totalGB = parseInt(match[3]);
+        
+        // 2. Processing: Tính toán logic
+        const usedGB = totalGB - freeGB;
+        const usedPercent = Math.round((usedGB / totalGB) * 100);
+        
+        // Logic màu sắc: Đỏ nếu > 90%, Vàng > 70%, Xanh còn lại
+        let colorClass = 'bg-emerald-500';
+        if (usedPercent > 90) colorClass = 'bg-red-500';
+        else if (usedPercent > 70) colorClass = 'bg-yellow-500';
+
+        // 3. Rendering: Tạo HTML string (Tailwind)
+        res += driveName + " " + pad3(freeGB) + "GB/" + pad3(totalGB) + "GB. " + " - " + usedPercent + "%\n";
+    }
+    return res;
 }

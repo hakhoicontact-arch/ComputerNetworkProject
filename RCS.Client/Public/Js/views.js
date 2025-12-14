@@ -97,82 +97,152 @@ export function updateAppTable(apps) {
 export function renderProcessLayout() {
     return `
         <div class="space-y-6">
-             <!-- 1. HEADER THỐNG KÊ (DASHBOARD STYLE) -->
-            <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
 
-                <!-- CPU Card -->
-                <div class="bg-blue-50 p-3 rounded-xl border border-blue-100 shadow-sm transition-transform hover:scale-[1.02]">
-                    <div class="flex justify-between items-start">
-                        <p class="text-xs text-blue-500 font-bold uppercase tracking-wider">CPU Usage</p>
-                        <i class="fas fa-microchip text-blue-200 text-lg"></i>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 items-stretch">
+
+                <div class="flip-card-container h-full" onclick="this.classList.toggle('flipped')">
+                    <div class="flip-card-inner h-full">
+                        <div class="flip-card-front h-full">
+                            <div class="bg-blue-50 p-3 rounded-xl border border-blue-100 shadow-sm h-full flex flex-col justify-between gap-4">
+                                <div>
+                                    <div class="flex justify-between items-start">
+                                        <p class="text-xs text-blue-500 font-bold uppercase tracking-wider">CPU Usage</p>
+                                        <i class="fas fa-microchip text-blue-200 text-lg"></i>
+                                    </div>
+                                    <p id="total-cpu" class="text-xl font-mono font-bold text-slate-700 mt-1">0%</p>
+                                    <div class="w-full bg-blue-200 h-1.5 rounded-full mt-2 overflow-hidden">
+                                        <div id="bar-cpu" class="bg-blue-500 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+                                    </div>
+                                </div>
+                                <p class="text-[10px] text-slate-400 font-medium">
+                                    <i class="fas fa-info-circle mr-1"></i>Nhấn xem chi tiết
+                                </p>
+                            </div>
+                        </div>
+                        <div class="flip-card-back h-full">
+                            <div class="bg-blue-50 p-3 rounded-xl border border-blue-100 shadow-sm h-full flex flex-col justify-between gap-4">
+                                <div>
+                                    <div class="flex justify-between items-start">
+                                        <p class="text-xs text-blue-500 font-bold uppercase tracking-wider">CPU Info</p>
+                                        <i class="fas fa-microchip text-blue-200 text-lg"></i>
+                                    </div>
+                                    <p id="spec-cpu-name" class="font-semibold text-slate-800 text-xs mt-1 truncate" title="Loading...">Loading...</p>
+                                    <p id="spec-cpu-cores" class="text-xs text-slate-500 font-mono mt-1">-</p>
+                                </div>
+                                <p class="text-[10px] text-slate-400 font-medium">
+                                    <i class="fas fa-undo mr-1"></i>Quay lại
+                                </p>
+                            </div>
+                        </div>
                     </div>
-                    <p id="total-cpu" class="text-xl font-mono font-bold text-slate-700 mt-1">0%</p>
-                    <div class="w-full bg-blue-200 h-1.5 rounded-full mt-2 overflow-hidden">
-                        <div id="bar-cpu" class="bg-blue-500 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
-                    </div>
-                    <!-- Dòng chú thích nhỏ -->
-                    <p class="text-[10px] text-slate-400 mt-2 font-medium">
-                        <i class="fas fa-info-circle mr-1"></i>Mức độ sử dụng
-                    </p>
                 </div>
 
-                <!-- RAM Card -->
-                <div class="bg-purple-50 p-3 rounded-xl border border-purple-100 shadow-sm transition-transform hover:scale-[1.02]">
-                    <div class="flex justify-between items-start">
-                        <p class="text-xs text-purple-500 font-bold uppercase tracking-wider">Memory</p>
-                        <i class="fas fa-memory text-purple-200 text-lg"></i>
+                <div class="flip-card-container h-full" onclick="this.classList.toggle('flipped')">
+                    <div class="flip-card-inner h-full">
+                        <div class="flip-card-front h-full">
+                            <div class="bg-purple-50 p-3 rounded-xl border border-purple-100 shadow-sm h-full flex flex-col justify-between gap-4">
+                                <div>
+                                    <div class="flex justify-between items-start">
+                                        <p class="text-xs text-purple-500 font-bold uppercase tracking-wider">Memory</p>
+                                        <i class="fas fa-memory text-purple-200 text-lg"></i>
+                                    </div>
+                                    <div class="flex items-baseline gap-2 mt-1">
+                                        <p id="total-mem" class="text-xl font-mono font-bold text-slate-700">0 MB</p>
+                                        <p id="spec-ram-total-1" class="text-sm font-semibold text-slate-400"></p>
+                                    </div>
+                                    <div class="w-full bg-purple-200 h-1.5 rounded-full mt-2 overflow-hidden">
+                                        <div id="bar-mem" class="bg-purple-500 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+                                    </div>
+                                </div>
+                                <p class="text-[10px] text-slate-400 font-medium">
+                                    <i class="fas fa-server mr-1"></i>Nhấn xem chi tiết
+                                </p>
+                            </div>
+                        </div>
+                        <div class="flip-card-back h-full">
+                            <div class="bg-purple-50 p-3 rounded-xl border border-purple-100 shadow-sm h-full flex flex-col justify-between gap-4">
+                                <div>
+                                    <div class="flex justify-between items-start">
+                                        <p class="text-xs text-purple-500 font-bold uppercase tracking-wider">Memory</p>
+                                        <i class="fas fa-memory text-purple-200 text-lg"></i>
+                                    </div>
+                                    <p id="spec-ram-total-2" class="font-semibold text-slate-800 mt-1">Loading...</p>
+                                    <p id="spec-ram-detail" class="text-xs text-slate-500 font-mono mt-1">-</p>
+                                </div>
+                                <p class="text-[10px] text-slate-400 font-medium">
+                                    <i class="fas fa-undo mr-1"></i>Quay lại
+                                </p>
+                            </div>
+                        </div>
                     </div>
-                    <p id="total-mem" class="text-xl font-mono font-bold text-slate-700 mt-1">0 MB</p>
-                    <div class="w-full bg-purple-200 h-1.5 rounded-full mt-2 overflow-hidden">
-                        <div id="bar-mem" class="bg-purple-500 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
-                    </div>
-                    <!-- Dòng chú thích nhỏ -->
-                    <p class="text-[10px] text-slate-400 mt-2 font-medium">
-                        <i class="fas fa-server mr-1"></i>Đang chiếm dụng
-                    </p>
                 </div>
 
-                <!-- Disk Card -->
-                <div class="bg-orange-50 p-3 rounded-xl border border-orange-100 shadow-sm transition-transform hover:scale-[1.02]">
-                    <div class="flex justify-between items-start">
-                        <p class="text-xs text-orange-500 font-bold uppercase tracking-wider">Disk I/O</p>
-                        <i class="fas fa-hdd text-orange-200 text-lg"></i>
+                <div class="flip-card-container h-full" onclick="this.classList.toggle('flipped')">
+                    <div class="flip-card-inner h-full">
+                        <div class="flip-card-front h-full">
+                            <div class="bg-orange-50 p-3 rounded-xl border border-orange-100 shadow-sm h-full flex flex-col justify-between gap-4">
+                                <div>
+                                    <div class="flex justify-between items-start">
+                                        <p class="text-xs text-orange-500 font-bold uppercase tracking-wider">Disk I/O</p>
+                                        <i class="fas fa-hdd text-orange-200 text-lg"></i>
+                                    </div>
+                                    <p id="total-disk" class="text-xl font-mono font-bold text-slate-700 mt-1">0 KB/s</p>
+                                    <div class="w-full bg-orange-200 h-1.5 rounded-full mt-2 overflow-hidden">
+                                        <div id="bar-disk" class="bg-orange-400 h-full rounded-full w-0 transition-all duration-500 opacity-50"></div>
+                                    </div>
+                                </div>
+                                <p class="text-[10px] text-slate-400 font-medium">
+                                    <i class="fas fa-exchange-alt mr-1"></i>Nhấn xem chi tiết
+                                </p>
+                            </div>
+                        </div>
+                        <div class="flip-card-back h-full">
+                            <div class="bg-orange-50 p-3 rounded-xl border border-orange-100 shadow-sm h-full flex flex-col justify-between gap-4">
+                                <div class="flex flex-col h-full overflow-hidden"> <div class="flex justify-between items-start mb-2">
+                                        <p class="text-xs text-orange-500 font-bold uppercase tracking-wider">Disk I/O</p>
+                                        <i class="fas fa-hdd text-orange-200 text-lg"></i>
+                                    </div>
+                                    <div id="spec-disk" class="text-xs font-mono text-slate-600 overflow-y-auto pr-1 custom-scrollbar">Loading drives...</div>
+                                </div>
+                                </div>
+                        </div>
                     </div>
-                    <p id="total-disk" class="text-xl font-mono font-bold text-slate-700 mt-1">0 KB/s</p>
-                    <div class="w-full bg-orange-200 h-1.5 rounded-full mt-2 overflow-hidden">
-                        <div id="bar-disk" class="bg-orange-400 h-full rounded-full w-0 transition-all duration-500 opacity-50"></div>
-                    </div>
-                    <!-- Dòng chú thích nhỏ -->
-                    <p class="text-[10px] text-slate-400 mt-2 font-medium">
-                        <i class="fas fa-exchange-alt mr-1"></i>Tốc độ Đọc/Ghi
-                    </p>
                 </div>
 
-                <!-- Processes Count -->
-                <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 shadow-sm transition-transform hover:scale-[1.02]">
+                <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 shadow-sm h-full flex flex-col justify-between gap-4">
                     <div class="flex justify-between items-start">
                         <p class="text-xs text-slate-500 font-bold uppercase tracking-wider">Processes</p>
                         <i class="fas fa-tasks text-slate-300 text-lg"></i>
                     </div>
-                    <p id="total-count" class="text-xl font-mono font-bold text-slate-700 mt-1">0</p>
-                    <!-- Dòng chú thích nhỏ -->
-                    <p class="text-[10px] text-slate-400 mt-2 font-medium">
-                        <i class="fas fa-list-ul mr-1"></i>Tiến trình chạy
+
+                    <div class="flex flex-col justify-center flex-grow">
+                        <p id="total-count" class="text-2xl font-mono font-bold text-slate-700">0</p>
+                    </div>
+
+                    <p class="text-[10px] text-slate-400 font-medium">
+                        <i class="fas fa-list-ul mr-1"></i>Đang hoạt động
                     </p>
                 </div>
 
-                <!-- Threads/Handles -->
-                <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 shadow-sm hidden md:block">
-                    <p class="text-xs text-slate-500 font-bold uppercase tracking-wider mb-2">System Info</p>
-                    <div class="flex justify-between items-end mb-1">
-                        <span class="text-[10px] text-slate-400 font-medium">Threads</span>
-                        <span id="total-threads" class="font-mono font-bold text-slate-600 text-sm">0</span>
+                <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 shadow-sm h-full flex flex-col justify-between gap-4 hidden md:flex">
+                    <div class="flex justify-between items-start">
+                        <p class="text-xs text-slate-500 font-bold uppercase tracking-wider">System</p>
+                        <i class="fas fa-cogs text-slate-300 text-lg"></i>
                     </div>
-                    <div class="flex justify-between items-end">
-                        <span class="text-[10px] text-slate-400 font-medium">Handles</span>
-                        <span id="total-handles" class="font-mono font-bold text-slate-600 text-sm">0</span>
+
+                    <div class="flex flex-col justify-center gap-2 flex-grow">
+                        <div class="flex justify-between items-baseline border-b border-slate-100 pb-1">
+                            <span class="text-[10px] text-slate-400 font-medium">Threads</span>
+                            <span id="total-threads" class="font-mono font-bold text-slate-600 text-lg">0</span>
+                        </div>
+                        <div class="flex justify-between items-baseline">
+                            <span class="text-[10px] text-slate-400 font-medium">Handles</span>
+                            <span id="total-handles" class="font-mono font-bold text-slate-600 text-lg">0</span>
+                        </div>
                     </div>
+
                 </div>
+
             </div>
 
             <!-- 2. TOOLBAR -->
@@ -352,8 +422,8 @@ export function renderKeyloggerDisplay() {
                     
                     <!-- CHỌN CHẾ ĐỘ -->
                     <select id="keylog-mode" class="bg-transparent text-sm font-semibold text-slate-700 outline-none cursor-pointer">
-                        <option value="english">🔤 Tiếng Anh (Gốc)</option>
-                        <option value="telex">🇻🇳 Tiếng Việt (Telex)</option>
+                        <option value="english">EN Tiếng Anh</option>
+                        <option value="telex">VN Tiếng Việt (Telex)</option>
                     </select>
 
                     <button id="download-keylog-btn" class="text-blue-600 hover:bg-blue-100 p-2 rounded-md transition-colors" title="Tải về .txt">
@@ -522,7 +592,7 @@ export function renderSystemControls() {
                         <i class="fab fa-windows text-blue-400 mt-1"></i>
                         <div>
                             <p id="spec-os" class="font-semibold text-slate-800 text-xs">Loading...</p>
-                            <p id="spec-ip" class="text-xs text-slate-500 font-mono mt-0.5">IP: -</p>
+                            <p id="spec-ip" class="text-xs whitespace-pre-line text-slate-500 font-mono mt-0.5">IP: -</p>
                         </div>
                     </div>
                 </div>

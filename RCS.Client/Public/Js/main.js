@@ -2,13 +2,14 @@ import { CONFIG, state } from './config.js';
 import * as Utils from './utils.js';
 import * as Views from './views.js';
 import { startSignalR, sendCommand } from './network.js';
-import {processInputKey} from './utils.js';
+import {processInputKey, renderDiskInfo} from './utils.js';
 
 let previousObjectUrl = null;
 
 // Kiểm tra xem phần tử có tồn tại không trước khi gán
 const agentIdDisplay = document.getElementById('agent-id-display');
 if (agentIdDisplay) agentIdDisplay.textContent = CONFIG.AGENT_ID;
+
 
 // --- 1. CÁC HÀM CALLBACK XỬ LÝ DỮ LIỆU (BẮT BUỘC PHẢI CÓ) ---
 
@@ -17,23 +18,23 @@ const originalAttachViewListeners = window.attachViewListeners || function(){};
 function handleResponse(data) {
     if (!data) return;
 
-    if (data)
-
     if (data.action === 'sys_specs') {
         const specs = data.response; // Object chứa: CpuName, GpuName, ...
         
         // Helper gán text an toàn
         const setText = (id, val) => { const el = document.getElementById(id); if(el) el.textContent = val; };
 
+
         setText('spec-cpu-name', specs.cpuName);
         setText('spec-cpu-cores', specs.cpuCores);
-        setText('spec-ram-total', specs.totalRam);
+        setText('spec-ram-total-1', specs.totalRam);
+        setText('spec-ram-total-2', specs.totalRam);
         setText('spec-ram-detail', specs.ramDetail);
         setText('spec-gpu', specs.gpuName);
         setText('spec-os', specs.osName);
-        setText('spec-ip', `IP: ${specs.localIp} | MAC: ${specs.macAddress}`);
+        setText('spec-ip', `IP: ${specs.localIp} \nMAC: ${specs.macAddress}`);
         setText('spec-uptime', `Uptime: ${specs.uptime}`);
-        setText('spec-disk', specs.diskInfo);
+        setText('spec-disk', renderDiskInfo(specs.diskInfo));
         
         return;
     }
@@ -253,6 +254,16 @@ function sortAndRenderProcess() {
         if (column === 'pid') { valA = parseInt(a.pid); valB = parseInt(b.pid); }
         else if (column === 'name') { valA = (a.name||'').toLowerCase(); valB = (b.name||'').toLowerCase(); }
         else if (column === 'cpu') { valA = parseFloat(a.cpu?.replace('%','')||0); valB = parseFloat(b.cpu?.replace('%','')||0); }
+        else if (column === 'disk') { 
+            const parseDisk = (s) => {
+                if(!s) return 0;
+                let v = parseFloat(s.replace(/[^\d.]/g, '')) || 0;
+                if(s.includes('MB/s')) v *= 1024;
+                return v;
+            };
+            valA = parseDisk(a.disk);
+            valB = parseDisk(b.disk);
+        }
         else { valA = parseFloat(a.mem?.replace(/[^\d]/g,'')||0); valB = parseFloat(b.mem?.replace(/[^\d]/g,'')||0); }
         
         if (valA < valB) return direction === 'asc' ? -1 : 1;

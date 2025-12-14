@@ -267,7 +267,7 @@ body {
         .flip-card-container {
             perspective: 1000px;
             width: 100%;  /* Đổi từ 220px sang 100% để ăn theo Grid */
-            height: 100%; /* Đổi từ 140px sang 100% để cao bằng các thẻ bên cạnh */
+            height: 120px; /* Đổi từ 140px sang 100% để cao bằng các thẻ bên cạnh */
             cursor: pointer;
             position: relative;
         }
