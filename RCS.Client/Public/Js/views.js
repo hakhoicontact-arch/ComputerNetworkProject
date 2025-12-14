@@ -331,14 +331,59 @@ export function renderScreenshotView() {
 
 export function renderKeyloggerDisplay() {
     return `
-        <div class="space-y-4">
-            <div class="flex space-x-3">
-                <button id="start-keylogger-btn" class="bg-green-600 text-white px-4 py-2 rounded-lg font-semibold shadow-md shadow-green-200 hover:bg-green-700 transition-all">Bắt Đầu</button>
-                <button id="stop-keylogger-btn" class="bg-red-600 text-white px-4 py-2 rounded-lg font-semibold shadow-md shadow-red-250 hover:bg-red-700 transition-all">Dừng</button>
-                <button id="clear-keylogger-btn" class="bg-gray-500 text-white px-4 py-2 rounded-lg font-semibold shadow-md shadow-gray-300 hover:bg-gray-600 transition-all">Xóa</button>
+        <div class="space-y-4 h-full flex flex-col">
+            <!-- TOOLBAR -->
+            <div class="flex flex-wrap items-center justify-between bg-white p-3 rounded-xl shadow-sm border border-gray-100 gap-3">
+                <div class="flex items-center space-x-2">
+                    <button id="start-keylogger-btn" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium transition-colors shadow-sm flex items-center">
+                        <i class="fas fa-play mr-2"></i> Bắt đầu
+                    </button>
+                    <button id="stop-keylogger-btn" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-medium transition-colors shadow-sm flex items-center">
+                        <i class="fas fa-stop mr-2"></i> Dừng
+                    </button>
+                    <button id="clear-keylogger-btn" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-4 py-2 rounded-lg font-medium transition-colors shadow-sm flex items-center">
+                        <i class="fas fa-eraser mr-2"></i> Xóa
+                    </button>
+                </div>
+
+                <div class="flex items-center space-x-3 bg-slate-50 p-1.5 rounded-lg border border-slate-200">
+                    <span id="keylogger-status" class="text-xs font-bold text-blue-600 animate-pulse px-2">Trạng thái: Chờ...</span>
+                    <div class="h-6 w-px bg-slate-300"></div>
+                    
+                    <!-- CHỌN CHẾ ĐỘ -->
+                    <select id="keylog-mode" class="bg-transparent text-sm font-semibold text-slate-700 outline-none cursor-pointer">
+                        <option value="english">🔤 Tiếng Anh (Gốc)</option>
+                        <option value="telex">🇻🇳 Tiếng Việt (Telex)</option>
+                    </select>
+
+                    <button id="download-keylog-btn" class="text-blue-600 hover:bg-blue-100 p-2 rounded-md transition-colors" title="Tải về .txt">
+                        <i class="fas fa-download"></i>
+                    </button>
+                </div>
             </div>
-            <p id="keylogger-status" class="text-sm font-bold text-blue-600">Trạng thái: Đang chờ lệnh...</p>
-            <textarea id="keylogger-log" class="w-full h-80 p-4 border rounded-lg font-mono text-sm bg-gray-50" readonly></textarea>
+
+            <!-- MAIN DISPLAY AREA (SPLIT SCREEN) -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 flex-grow h-full min-h-[400px]">
+                
+                <!-- CỘT 1: RAW LOG (Dữ liệu thô) -->
+                <div class="flex flex-col h-full bg-slate-900 rounded-xl overflow-hidden shadow-inner border border-slate-700">
+                    <div class="bg-slate-800 px-4 py-2 border-b border-slate-700 flex justify-between items-center">
+                        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider"><i class="fas fa-terminal mr-2"></i>Raw Input Stream</h3>
+                        <span class="text-[10px] text-slate-500 font-mono">Real-time</span>
+                    </div>
+                    <textarea id="keylogger-log-raw" class="flex-grow w-full p-4 bg-transparent text-green-400 font-mono text-xs resize-none outline-none leading-relaxed" readonly placeholder="Dữ liệu phím thô sẽ hiện ở đây..."></textarea>
+                </div>
+
+                <!-- CỘT 2: PROCESSED TEXT (Văn bản đọc được) -->
+                <div class="flex flex-col h-full bg-white rounded-xl overflow-hidden shadow-sm border border-slate-200">
+                    <div class="bg-slate-50 px-4 py-2 border-b border-slate-200 flex justify-between items-center">
+                        <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider"><i class="fas fa-file-alt mr-2"></i>Processed Text</h3>
+                        <span class="text-[10px] text-blue-500 font-mono bg-blue-50 px-2 py-0.5 rounded" id="mode-indicator">EN</span>
+                    </div>
+                    <textarea id="keylogger-log-processed" class="flex-grow w-full p-4 bg-transparent text-slate-800 font-sans text-sm resize-none outline-none leading-relaxed" readonly placeholder="Văn bản đã xử lý sẽ hiện ở đây..."></textarea>
+                </div>
+
+            </div>
         </div>
     `;
 }

