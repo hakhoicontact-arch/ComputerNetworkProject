@@ -25,7 +25,9 @@ namespace RCS.Agent
        #region --- CONFIGURATION (CẤU HÌNH HỆ THỐNG) ---
 
         // Thông tin định danh
-        public const string AGENT_ID = "Agent_12345";
+        public static string AGENT_ID = "Agent_12345";
+
+        private const string DEFAULT_AGENT_ID = "Agent_12345";
         
         // Cấu hình Mặc định (Fallback)
         private const string DEFAULT_SERVER_HOST = "127.0.0.1";
@@ -96,6 +98,30 @@ namespace RCS.Agent
                     Console.WriteLine($"[Config] No input provided. Using localhost.");
                 }
             }
+
+            if (args.Length > 1)
+            {
+                AGENT_ID = args[0];
+                Console.WriteLine($"[Config] Auto-detected Agent ID: {AGENT_ID}");
+            }
+            // Trường hợp 2: Không có tham số -> Hỏi người dùng
+            else
+            {
+                Console.Write($"Enter AGENT_ID (Default: {DEFAULT_AGENT_ID}): ");
+                string input = Console.ReadLine();
+
+                if (!string.IsNullOrWhiteSpace(input))
+                {
+                    // Tạm chấp nhận input là IP hoặc domain
+                    AGENT_ID = input.Trim();
+                }
+                else
+                {
+                    AGENT_ID = DEFAULT_AGENT_ID;
+                    Console.WriteLine($"[Config] No input provided. Using ${DEFAULT_AGENT_ID}.");
+                }
+            }
+
 
             // Tạo chuỗi kết nối chuẩn
             SERVER_URL_FINAL = $"http://{CURRENT_SERVER_IP}:{SERVER_TCP_PORT}/agenthub";

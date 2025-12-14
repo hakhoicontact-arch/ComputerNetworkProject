@@ -16,6 +16,8 @@ const originalAttachViewListeners = window.attachViewListeners || function(){};
 function handleResponse(data) {
     if (!data) return;
 
+    if (data)
+
     if (data.action === 'sys_specs') {
         const specs = data.response; // Object chứa: CpuName, GpuName, ...
         

