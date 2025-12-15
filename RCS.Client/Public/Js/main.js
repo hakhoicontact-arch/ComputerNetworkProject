@@ -570,23 +570,18 @@ function attachViewListeners(view) {
         document.getElementById('shutdown-btn').onclick = () => Utils.showModal("CẢNH BÁO", "Tắt máy Agent?", () => sendCommand('shutdown'));
         document.getElementById('restart-btn').onclick = () => Utils.showModal("CẢNH BÁO", "Khởi động lại Agent?", () => sendCommand('restart'));
     }
-
-    if (view === 'terminal') {
+    else if (view === 'terminal') {
         const input = document.getElementById('terminal-input');
         const output = document.getElementById('terminal-output');
         const btnStart = document.getElementById('term-start-btn');
         const btnClear = document.getElementById('term-clear-btn');
 
-        // Focus ngay vào ô nhập khi mở tab
-        if (input) setTimeout(() => input.focus(), 100);
-
-        // Xử lý Gõ lệnh (Enter)
         if (input) {
+            setTimeout(() => input.focus(), 100);
             input.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') {
                     const cmd = input.value.trim();
                     if (cmd) {
-                        // 1. In lại lệnh của mình lên màn hình (màu vàng để phân biệt)
                         if (output) {
                             const myLine = document.createElement('div');
                             myLine.textContent = `> ${cmd}`;
@@ -594,21 +589,35 @@ function attachViewListeners(view) {
                             output.appendChild(myLine);
                             output.scrollTop = output.scrollHeight;
                         }
-
-                        // 2. Gửi lệnh về Agent
-                        // Lưu ý: action='term_input', params={ cmd: "ipconfig" }
                         sendCommand('term_input', { cmd: cmd });
-                        
-                        // 3. Xóa ô nhập
                         input.value = '';
                     }
                 }
             });
         }
-
-        // Nút chức năng
+        
         if (btnClear) btnClear.onclick = () => { if(output) output.innerHTML = ''; };
-        if (btnStart) btnStart.onclick = () => sendCommand('term_start');
+        
+        // SỬA: Logic Restart Session đúng nghĩa
+        if (btnStart) btnStart.onclick = () => {
+            // 1. Gửi lệnh STOP trước để giết tiến trình cũ
+            sendCommand('term_stop');
+            
+            // 2. Thông báo trên màn hình
+            if(output) {
+                const line = document.createElement('div');
+                line.textContent = "--- RESTARTING SESSION ---";
+                line.className = "text-orange-500 font-bold mt-4 mb-2 italic";
+                output.appendChild(line);
+                output.scrollTop = output.scrollHeight;
+            }
+
+            // 3. Đợi 500ms cho Agent dọn dẹp xong thì gửi lệnh START lại
+            setTimeout(() => {
+                if(output) output.innerHTML = ''; // Xóa sạch màn hình cho mới
+                sendCommand('term_start');
+            }, 800);
+        };
     }
 }
 

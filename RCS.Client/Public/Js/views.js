@@ -518,10 +518,53 @@ export function renderWebcamControl() {
                 <div id="webcam-stats-overlay" class="absolute top-4 right-4 bg-black/60 backdrop-blur-sm p-3 rounded-lg pointer-events-none border border-white/10 shadow-lg z-10" style="display: none;"></div>
                 
                 <div id="webcam-placeholder" class="text-gray-500 dark:text-slate-500 flex flex-col items-center z-0">
-                    <div class="w-20 h-20 bg-gray-800 rounded-full flex items-center justify-center mb-4">
-                        <i class="fas fa-video-slash fa-3x text-gray-600"></i>
+                    <div class="box-of-star1">
+                        <div class="star star-position1"></div>
+                        <div class="star star-position2"></div>
+                        <div class="star star-position3"></div>
+                        <div class="star star-position4"></div>
+                        <div class="star star-position5"></div>
+                        <div class="star star-position6"></div>
+                        <div class="star star-position7"></div>
                     </div>
-                    <span class="text-lg font-medium">Camera Offline</span>
+                    <div class="box-of-star2">
+                        <div class="star star-position1"></div>
+                        <div class="star star-position2"></div>
+                        <div class="star star-position3"></div>
+                        <div class="star star-position4"></div>
+                        <div class="star star-position5"></div>
+                        <div class="star star-position6"></div>
+                        <div class="star star-position7"></div>
+                    </div>
+                    <div class="box-of-star3">
+                        <div class="star star-position1"></div>
+                        <div class="star star-position2"></div>
+                        <div class="star star-position3"></div>
+                        <div class="star star-position4"></div>
+                        <div class="star star-position5"></div>
+                        <div class="star star-position6"></div>
+                        <div class="star star-position7"></div>
+                    </div>
+                    <div class="box-of-star4">
+                        <div class="star star-position1"></div>
+                        <div class="star star-position2"></div>
+                        <div class="star star-position3"></div>
+                        <div class="star star-position4"></div>
+                        <div class="star star-position5"></div>
+                        <div class="star star-position6"></div>
+                        <div class="star star-position7"></div>
+                    </div>
+                    <div data-js="astro" class="astronaut">
+                        <div class="head"></div>
+                        <div class="arm arm-left"></div>
+                        <div class="arm arm-right"></div>
+                        <div class="body">
+                        <div class="panel"></div>
+                        </div>
+                        <div class="leg leg-left"></div>
+                        <div class="leg leg-right"></div>
+                        <div class="schoolbag"></div>
+                    </div>
                 </div>
                 
                 <img id="webcam-stream" src="" alt="Video Webcam Agent" class="w-full h-full object-contain absolute inset-0 z-1" style="display:none" />
