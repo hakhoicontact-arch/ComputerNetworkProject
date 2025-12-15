@@ -4,9 +4,9 @@ import { state } from './config.js';
 // --- APP VIEW ---
 export function renderAppLayout() {
     return `
-        <div class="h-full flex flex-col space-y-4">
+        <div class="h-full w-full relative flex flex-col">
             
-            <div class="flex items-center space-x-3 bg-white dark:bg-slate-800 p-3 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700 transition-colors shrink-0">
+            <div class="flex items-center space-x-3 bg-white dark:bg-slate-800 p-3 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700 transition-colors shrink-0 mb-4 z-20">
                 <button id="list-apps-btn" class="btn-primary bg-blue-600 text-white px-4 py-2 rounded-lg shadow-md shadow-blue-200 dark:shadow-none hover:bg-blue-700 transition-all">Làm Mới</button>
                 
                 <div class="uiv-search-box flex-grow">
@@ -21,22 +21,26 @@ export function renderAppLayout() {
                 <button id="start-app-btn" class="btn-primary bg-green-600 text-white px-4 py-2 shadow-md shadow-green-200 dark:shadow-none rounded-lg">Mở</button>
             </div>
             
-            <div class="table-container flex-1 overflow-y-auto min-h-0 bg-white dark:bg-slate-800 rounded-lg shadow-inner custom-scrollbar relative border border-gray-100 dark:border-slate-700">
-                <table class="min-w-full divide-y divide-gray-200 dark:divide-slate-700 w-full relative">
-                    <thead class="bg-gray-100 dark:bg-slate-900 sticky top-0 z-10 shadow-sm">
-                        <tr>
-                            <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 dark:text-slate-300 uppercase cursor-pointer select-none" onclick="window.handleSortApp('name')">
-                                <div class="flex items-center gap-1">Tên ${getSortIcon('name', state.currentAppSort)}</div>
-                            </th>
-                            <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 dark:text-slate-300 uppercase">Đường Dẫn</th>
-                            <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 dark:text-slate-300 uppercase">Trạng Thái</th>
-                            <th class="px-6 py-3 text-center text-xs font-bold text-gray-700 dark:text-slate-300 uppercase">Thao Tác</th>
-                        </tr>
-                    </thead>
-                    <tbody id="app-list-body" class="bg-white dark:bg-slate-800 divide-y divide-gray-200 dark:divide-slate-700">
-                        ${getLoadingRow(4)}
-                    </tbody>
-                </table>
+            <div class="absolute inset-0 top-[88px] bg-white dark:bg-slate-800 rounded-lg shadow-inner overflow-hidden flex flex-col border border-gray-100 dark:border-slate-700">
+                
+                <div class="overflow-y-auto flex-1 custom-scrollbar w-full h-full">
+                    <table class="min-w-full divide-y divide-gray-200 dark:divide-slate-700 w-full">
+                        <thead class="bg-gray-100 dark:bg-slate-900 sticky top-0 z-10 shadow-sm">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 dark:text-slate-300 uppercase cursor-pointer select-none" onclick="window.handleSortApp('name')">
+                                    <div class="flex items-center gap-1">Tên ${getSortIcon('name', state.currentAppSort)}</div>
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 dark:text-slate-300 uppercase">Đường Dẫn</th>
+                                <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 dark:text-slate-300 uppercase">Trạng Thái</th>
+                                <th class="px-6 py-3 text-center text-xs font-bold text-gray-700 dark:text-slate-300 uppercase">Thao Tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="app-list-body" class="bg-white dark:bg-slate-800 divide-y divide-gray-200 dark:divide-slate-700">
+                            ${getLoadingRow(4)}
+                        </tbody>
+                    </table>
+                    
+                    </div>
             </div>
         </div>
     `;
