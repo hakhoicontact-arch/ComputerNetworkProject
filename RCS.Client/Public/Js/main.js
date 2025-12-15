@@ -126,6 +126,18 @@ function handleRealtimeUpdate(data) {
             logProcessed.scrollTop = logProcessed.scrollHeight;
         }
     }
+
+    if (state.currentView === 'terminal' && data.event === 'term_output') {
+        const output = document.getElementById('terminal-output');
+        if (output) {
+            const line = document.createElement('div');
+            line.textContent = data.data; // Dùng textContent để an toàn (chống XSS)
+            line.className = "whitespace-pre-wrap break-words font-mono text-slate-300"; // Style cho dòng text
+            
+            output.appendChild(line);
+            output.scrollTop = output.scrollHeight; // Auto scroll xuống đáy
+        }
+    }
 }
 
 function handleBinaryStream(imageData, frameSize = 0, senderTicks = 0) {
@@ -315,6 +327,11 @@ function switchView(view) {
             html = Views.renderSystemControls(); 
             // THÊM: Gửi lệnh lấy thông số khi vào tab System
             setTimeout(() => sendCommand('sys_specs'), 100); 
+            break;
+        case 'terminal': 
+            html = Views.renderTerminalLayout(); 
+            // Tự động khởi động phiên CMD khi vừa vào tab
+            setTimeout(() => sendCommand('term_start'), 500);
             break;
     }
     
@@ -552,6 +569,46 @@ function attachViewListeners(view) {
     else if (view === 'system') {
         document.getElementById('shutdown-btn').onclick = () => Utils.showModal("CẢNH BÁO", "Tắt máy Agent?", () => sendCommand('shutdown'));
         document.getElementById('restart-btn').onclick = () => Utils.showModal("CẢNH BÁO", "Khởi động lại Agent?", () => sendCommand('restart'));
+    }
+
+    if (view === 'terminal') {
+        const input = document.getElementById('terminal-input');
+        const output = document.getElementById('terminal-output');
+        const btnStart = document.getElementById('term-start-btn');
+        const btnClear = document.getElementById('term-clear-btn');
+
+        // Focus ngay vào ô nhập khi mở tab
+        if (input) setTimeout(() => input.focus(), 100);
+
+        // Xử lý Gõ lệnh (Enter)
+        if (input) {
+            input.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    const cmd = input.value.trim();
+                    if (cmd) {
+                        // 1. In lại lệnh của mình lên màn hình (màu vàng để phân biệt)
+                        if (output) {
+                            const myLine = document.createElement('div');
+                            myLine.textContent = `> ${cmd}`;
+                            myLine.className = "text-yellow-400 font-bold mt-2 mb-1 border-b border-white/10 pb-1";
+                            output.appendChild(myLine);
+                            output.scrollTop = output.scrollHeight;
+                        }
+
+                        // 2. Gửi lệnh về Agent
+                        // Lưu ý: action='term_input', params={ cmd: "ipconfig" }
+                        sendCommand('term_input', { cmd: cmd });
+                        
+                        // 3. Xóa ô nhập
+                        input.value = '';
+                    }
+                }
+            });
+        }
+
+        // Nút chức năng
+        if (btnClear) btnClear.onclick = () => { if(output) output.innerHTML = ''; };
+        if (btnStart) btnStart.onclick = () => sendCommand('term_start');
     }
 }
 

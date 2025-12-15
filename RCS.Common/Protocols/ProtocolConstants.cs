@@ -40,5 +40,13 @@ namespace RCS.Common.Protocols
 
         public const string ActionShutdown = "shutdown";    // Tắt máy
         public const string ActionRestart = "restart";   // Khởi động lại máy
+
+        // --- TERMINAL COMMANDS ---
+        public const string ActionTerminalStart = "term_start"; // Bắt đầu phiên CMD
+        public const string ActionTerminalStop = "term_stop";   // Hủy phiên CMD
+        public const string ActionTerminalInput = "term_input"; // Gửi lệnh (vd: "dir")
+        
+        // --- TERMINAL EVENTS (Gửi về Client) ---
+        public const string EventTerminalOutput = "term_output"; // Kết quả trả về
     }
 }

