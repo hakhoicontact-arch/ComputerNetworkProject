@@ -202,7 +202,7 @@ export function renderProcessLayout() {
                                         <p class="text-xs text-orange-500 font-bold uppercase tracking-wider">Disk I/O</p>
                                         <i class="fas fa-hdd text-orange-200 text-lg"></i>
                                     </div>
-                                    <div id="spec-disk" class="text-xs font-mono text-slate-600 overflow-y-auto pr-1 custom-scrollbar">Loading drives...</div>
+                                    <div id="spec-disk" class="whitespace-pre-line text-xs font-mono text-slate-600 overflow-y-auto pr-1 custom-scrollbar">Loading drives...</div>
                                 </div>
                                 </div>
                         </div>
@@ -392,7 +392,7 @@ export function renderScreenshotView() {
                 <i class="fas fa-download mr-2"></i> Lưu Ảnh
             </button>
             <div id="screenshot-area" class="bg-gray-100 border-2 border-dashed border-gray-300 rounded-lg p-6 flex flex-col items-center justify-center min-h-[300px]">
-                <p id="screenshot-placeholder" class="text-gray-500 mb-4">Chưa có ảnh</p>
+                <p id="screenshot-placeholder" class="text-gray-500 mb-4 h-full">Chưa có ảnh</p>
                 <img id="screenshot-image" src="" alt="Screenshot" class="hidden max-w-full shadow-lg border border-gray-200 rounded-lg">
             </div>
         </div>

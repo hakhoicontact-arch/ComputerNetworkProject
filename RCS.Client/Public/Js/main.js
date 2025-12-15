@@ -624,6 +624,34 @@ function doLogout() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+    // 1. Sidebar Toggle (Nút 3 gạch)
+    const toggleBtn = document.getElementById('sidebar-toggle');
+    if (toggleBtn) {
+        toggleBtn.addEventListener('click', toggleSidebar);
+    }
+
+    // 2. Tab Click (Sidebar items)
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+             // currentTarget quan trọng để lấy đúng nút button (kể cả khi click vào icon bên trong)
+             const view = e.currentTarget.dataset.view;
+             if (typeof window.switchView === 'function') window.switchView(view);
+             else switchView(view); // Gọi hàm cục bộ
+        });
+    });
+
+    // ... (Các event Login, Logout, Agent Select giữ nguyên) ...
+    const agentSelect = document.getElementById('agent-select');
+    if (agentSelect) {
+        agentSelect.addEventListener('change', (e) => {
+            agentId = e.target.value;
+            refreshCurrentViewData();
+            if (state.currentView === 'processes' || state.currentView === 'system') {
+                sendCommand('sys_specs');
+            }
+        });
+    }
+
     // Bind Tab Click
     document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.addEventListener('click', (e) => switchView(e.currentTarget.dataset.view));

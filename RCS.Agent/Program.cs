@@ -128,7 +128,7 @@ namespace RCS.Agent
             
             Console.WriteLine($"---------------------------------------------");
             Console.WriteLine($"Target Server: {CURRENT_SERVER_IP}");
-            Console.WriteLine($"SignalR URL  : {SERVER_URL_FINAL}");
+            Console.WriteLine($"Websocket URL  : {SERVER_URL_FINAL}");
             Console.WriteLine($"UDP Target   : {CURRENT_SERVER_IP}:{SERVER_UDP_PORT}");
             Console.WriteLine($"---------------------------------------------");
 
