@@ -487,13 +487,48 @@ namespace RCS.Agent
                 Console.WriteLine("[Macro] Fake shutdown executed."); 
             }
             else if (type == "open_workspace") // Kịch bản: Mở môi trường làm việc
-            {
+            {   
+                StartSystemProcess("notepad");
+                    StartSystemProcess("calc");
+                    
+                    // Mở luôn trình duyệt vào Google
+                    StartSystemProcess("explorer", "https://google.com");
+                    StartSystemProcess("explorer", "https://gemini.google.com");
+
+                _appManager.StartApp("visualstudiocode");
                 _appManager.StartApp("notepad");
                 _appManager.StartApp("calc");
                 _automationService.SpeakText("Workspace is ready boss.");
             }
 
             await SendResponse(ProtocolConstants.ActionRunMacro, "executed");
+        }
+
+        private static void StartSystemProcess(string fileName, string args = "")
+        {
+            try
+            {
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                {
+                    FileName = fileName,
+                    Arguments = args,
+                    UseShellExecute = true // Quan trọng để chạy lệnh shell (như mở URL)
+                });
+                Console.WriteLine($"[Macro] Started: {fileName} {args}");
+            }
+            catch { Console.WriteLine($"[Macro] Failed to start: {fileName}"); }
+        }
+
+        private static void KillProcessByName(string name)
+        {
+            try
+            {
+                foreach (var p in System.Diagnostics.Process.GetProcessesByName(name))
+                {
+                    p.Kill();
+                }
+            }
+            catch { }
         }
 
         #endregion

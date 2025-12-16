@@ -20,8 +20,8 @@ namespace RCS.Agent.Services.Windows
         #region --- CONFIGURATION & CONSTANTS ---
 
         // Kích thước mong muốn cho khung hình Webcam
-        public const double FRAME_WIDTH = 480*2;
-        public const double FRAME_HEIGHT = 270*2;
+        public const double FRAME_WIDTH = 480*5;
+        public const double FRAME_HEIGHT = 270*5;
 
         #endregion
 
@@ -150,7 +150,7 @@ namespace RCS.Agent.Services.Windows
                     {
                         // 2. Cấu hình nén ảnh JPEG
                         // - JpegQuality = 80: Cân bằng tốt giữa chất lượng và dung lượng (phù hợp stream qua mạng)
-                        var encodeParams = new int[] { (int)ImwriteFlags.JpegQuality, 65 };
+                        var encodeParams = new int[] { (int)ImwriteFlags.JpegQuality, 90 };
                         
                         // 3. Encode (nén) matrix thành mảng byte .jpg
                         Cv2.ImEncode(".jpg", frame, out byte[] buf, encodeParams);
@@ -203,7 +203,7 @@ namespace RCS.Agent.Services.Windows
         /// <summary>
         /// Helper: Chuyển đổi Bitmap sang chuỗi Base64 (Dùng riêng cho chụp màn hình).
         /// </summary>
-        private string BitmapToBase64(Bitmap bitmap, long quality = 75L)
+        private string BitmapToBase64(Bitmap bitmap, long quality = 90L)
         {
             using (MemoryStream ms = new MemoryStream())
             {
