@@ -727,41 +727,52 @@ function doLogin(username, password) {
 
         // QUAN TRỌNG: Hàm này phải nằm TRONG object callbacks
         onAgentListUpdate: (agentList) => {
-            console.log("Server báo danh sách Agent:", agentList);
+            console.log("Danh sách Agent:", agentList);
+            
+            const selectEl = document.getElementById('agent-select');
+            if (!selectEl) return;
 
-            // Logic: Nếu có ít nhất 1 agent, ta tự động chọn agent đầu tiên làm mục tiêu
+            // 1. Lưu lại giá trị đang chọn hiện tại (để không bị reset khi list cập nhật)
+            const currentSelection = CONFIG.AGENT_ID;
+
+            // 2. Xóa danh sách cũ
+            selectEl.innerHTML = '';
+
             if (agentList && agentList.length > 0) {
-                const firstAgent = agentList[0];
+                // 3. Tạo các thẻ <option> cho từng máy
+                agentList.forEach(agentId => {
+                    const option = document.createElement('option');
+                    option.value = agentId;
+                    option.textContent = agentId;
+                    option.className = "text-slate-800 dark:text-slate-200 bg-white dark:bg-slate-800"; // Style cho option
+                    selectEl.appendChild(option);
+                });
 
-                // 1. Cập nhật biến cấu hình để các hàm sendCommand dùng đúng ID này
-                CONFIG.AGENT_ID = firstAgent; 
-
-                // 2. Cập nhật giao diện (cái chữ Agent ID ở góc phải trên)
-                const displayEl = document.getElementById('agent-id-display');
-                if (displayEl) {
-                    displayEl.innerText = firstAgent;
-                    displayEl.classList.remove('text-slate-400');
-                    displayEl.classList.add('text-green-500'); // Hiệu ứng xanh báo hiệu online
+                // 4. Logic chọn máy
+                if (agentList.includes(currentSelection)) {
+                    // Nếu máy đang điều khiển vẫn online -> Giữ nguyên
+                    selectEl.value = currentSelection;
+                } else {
+                    // Nếu mới vào hoặc máy đang điều khiển bị mất kết nối -> Chọn máy đầu tiên
+                    const firstAgent = agentList[0];
+                    selectEl.value = firstAgent;
+                    CONFIG.AGENT_ID = firstAgent;
+                    
+                    // Thông báo chuyển máy
+                    Utils.updateStatus(`Đang điều khiển: ${firstAgent}`, 'success');
+                    
+                    // Reload dữ liệu cho máy mới
+                    if (state.currentView === 'system' || state.currentView === 'processes') {
+                        setTimeout(() => sendCommand('sys_specs'), 300);
+                    }
                 }
-                document.getElementById('agent-id-display').innerText = firstAgent;
-                
-                // 3. Cập nhật trạng thái kết nối góc trái
-                Utils.updateStatus(`Linked: ${firstAgent}`, 'success');
-
-                // 4. Nếu đang ở tab System hoặc Process, reload lại dữ liệu ngay cho nóng
-                if (state.currentView === 'system' || state.currentView === 'processes') {
-                    setTimeout(() => sendCommand('sys_specs'), 500);
-                }
-
             } else {
-                // Trường hợp không có Agent nào
+                // Không có máy nào
+                const option = document.createElement('option');
+                option.textContent = "No Agents";
+                selectEl.appendChild(option);
                 CONFIG.AGENT_ID = null;
-                const displayEl = document.getElementById('agent-id-display');
-                if (displayEl) {
-                    displayEl.innerText = "Waiting...";
-                    displayEl.classList.remove('text-green-500');
-                }
-                Utils.updateStatus("Chờ Agent kết nối...", "warning");
+                Utils.updateStatus("Chờ kết nối...", "warning");
             }
         }
     };
@@ -1229,3 +1240,37 @@ window.toggleAboutItem = (id) => {
 
 
 
+const agentSelect = document.getElementById('agent-select');
+if (agentSelect) {
+    agentSelect.addEventListener('change', (e) => {
+        const newAgentId = e.target.value;
+        
+        // 1. Cập nhật ID mục tiêu
+        CONFIG.AGENT_ID = newAgentId;
+        console.log("-> Chuyển sang điều khiển:", newAgentId);
+        Utils.updateStatus(`Đã chuyển sang: ${newAgentId}`, 'success');
+
+        // 2. Làm mới dữ liệu trên màn hình hiện tại (để không hiển thị dữ liệu của máy cũ)
+        // Ví dụ: Đang xem Process máy A, chuyển sang máy B thì phải load Process máy B
+        switch (state.currentView) {
+            case 'system':
+            case 'processes':
+                sendCommand('sys_specs');
+                if (state.currentView === 'processes') sendCommand('process_list');
+                break;
+            case 'applications':
+                sendCommand('app_list');
+                break;
+            case 'terminal':
+                document.getElementById('terminal-output').innerHTML = ''; // Xóa màn hình terminal cũ
+                sendCommand('term_start'); // Mở terminal máy mới
+                break;
+            case 'webcam':
+                // Tắt webcam máy cũ (nếu đang bật)
+                state.webcam.isStreaming = false; 
+                document.getElementById('webcam-stream').style.display = 'none';
+                document.getElementById('webcam-placeholder').style.display = 'flex';
+                break;
+        }
+    });
+}
