@@ -10,7 +10,7 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Runtime.InteropServices;
-using System.Windows.Forms; // Cần thiết để lấy thông tin Screen.PrimaryScreen
+using System.Windows.Forms;
 using OpenCvSharp;
 
 namespace RCS.Agent.Services.Windows
@@ -70,6 +70,8 @@ namespace RCS.Agent.Services.Windows
             {
                 // 1. Lấy kích thước màn hình chính
                 Rectangle bounds = Screen.PrimaryScreen.Bounds;
+
+                Console.WriteLine($"[Screen Capture] Capturing screen of size {bounds.Width}x{bounds.Height}");
 
                 // 2. Tạo Bitmap trống với kích thước tương ứng
                 using (Bitmap bitmap = new Bitmap(bounds.Width, bounds.Height))

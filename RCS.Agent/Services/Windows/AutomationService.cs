@@ -1,5 +1,6 @@
 using System;
-using System.Speech.Synthesis; // Cần package System.Speech
+using System.Speech.Synthesis;
+using RCS.Agent.Services.Windows.UI;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -20,20 +21,30 @@ namespace RCS.Agent.Services.Windows
             }
         }
 
-        public void ShowMessageBox(string message)
+        public void ShowMessageBox(string message, bool isPanic = false)
         {
-            // Chạy trong Task mới để không chặn luồng chính của Agent
-            Task.Run(() =>
+            // Tạo luồng UI riêng biệt
+            Thread uiThread = new Thread(() =>
             {
-                MessageBox.Show(
-                    message, 
-                    "CẢNH BÁO TỪ HỆ THỐNG", 
-                    MessageBoxButtons.OK, 
-                    MessageBoxIcon.Warning, 
-                    MessageBoxDefaultButton.Button1, 
-                    MessageBoxOptions.ServiceNotification // Quan trọng: Giúp hiện lên trên các cửa sổ khác
-                );
+                try
+                {
+                    // Kích hoạt Visual Styles để UI mượt mà hơn
+                    Application.EnableVisualStyles();
+                    Application.SetCompatibleTextRenderingDefault(false);
+
+                    // Khởi chạy Form tùy biến
+                    Application.Run(new ModernMessageBox(message, isPanic ? "🚨 SYSTEM ALERT 🚨" : "ADMIN MESSAGE", isPanic));
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"[UI Error] {ex.Message}");
+                }
             });
+
+            // Bắt buộc phải là STA cho Windows Forms
+            uiThread.SetApartmentState(ApartmentState.STA);
+            uiThread.IsBackground = true; // Để khi tắt Agent thì cửa sổ này cũng tắt theo
+            uiThread.Start();
         }
 
         public void SpeakText(string text)

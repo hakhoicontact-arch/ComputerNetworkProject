@@ -40,6 +40,7 @@ RCS.Agent/bin/
 RCS.Agent/obj/
 RCS.Server/bin/
 RCS.Server/obj/
+Test
 
 3. Loại trừ các file Webcam tạm (nếu có)
 

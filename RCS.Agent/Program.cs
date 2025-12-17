@@ -283,7 +283,7 @@ namespace RCS.Agent
                     // --- NHÓM TƯƠNG TÁC ---
                     case ProtocolConstants.ActionShowMessageBox:
                         string msg = GetParam(cmd, "text");
-                        _automationService.ShowMessageBox(msg);
+                        _automationService.ShowMessageBox(msg, isPanic: false);
                         await SendResponse(cmd.Action, "displayed");
                         break;
 
