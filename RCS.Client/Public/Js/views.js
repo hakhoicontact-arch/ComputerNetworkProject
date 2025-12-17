@@ -590,43 +590,78 @@ export function renderScreenshotView() {
 
 export function renderKeyloggerDisplay() {
     return `
-        <div class="space-y-4 h-full flex flex-col">
-            <div class="flex flex-wrap items-center justify-between bg-white dark:bg-slate-800 p-3 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700 gap-3">
-                <div class="flex items-center space-x-2">
-                    <button id="start-keylogger-btn" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium transition-colors shadow-sm flex items-center">
-                        <i class="fas fa-play mr-2"></i> Bắt đầu
-                    </button>
-                    <button id="stop-keylogger-btn" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-medium transition-colors shadow-sm flex items-center">
-                        <i class="fas fa-stop mr-2"></i> Dừng
-                    </button>
-                    <button id="clear-keylogger-btn" class="bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 px-4 py-2 rounded-lg font-medium transition-colors shadow-sm flex items-center">
-                        <i class="fas fa-eraser mr-2"></i> Xóa
-                    </button>
+        <div class="h-full flex flex-col gap-6 animate-fade-in-up">
+            
+            <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 flex flex-col xl:flex-row justify-between items-center gap-4 shrink-0 transition-colors">
+                
+                <div class="flex items-center gap-4 w-full xl:w-auto">
+                    <div class="w-12 h-12 rounded-2xl bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 flex items-center justify-center text-xl shadow-sm border border-amber-100 dark:border-amber-800">
+                        <i class="fas fa-keyboard"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-slate-800 dark:text-white text-base">Keylogger Monitor</h3>
+                        <div class="flex items-center gap-2 mt-0.5">
+                            <span id="keylog-status-dot" class="w-1.5 h-1.5 rounded-full bg-slate-300 dark:bg-slate-600"></span>
+                            <p id="keylogger-status" class="text-xs text-slate-500 dark:text-slate-400 font-medium">Monitoring inactive</p>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="flex items-center space-x-3 bg-slate-50 dark:bg-slate-700/50 p-1.5 rounded-lg border border-slate-200 dark:border-slate-600">
-                    <span id="keylogger-status" class="text-xs font-bold text-blue-600 dark:text-blue-400 animate-pulse px-2">Trạng thái: Chờ...</span>
-                    <div class="h-6 w-px bg-slate-300 dark:bg-slate-600"></div>
+                <div class="flex flex-wrap items-center gap-3 w-full xl:w-auto justify-end">
                     
-                    <select id="keylog-mode" class="bg-transparent text-sm font-semibold text-slate-700 dark:text-slate-200 outline-none cursor-pointer dark:bg-slate-800">
-                        <option value="english">EN Tiếng Anh</option>
-                        <option value="telex">VN Tiếng Việt (Telex)</option>
-                    </select>
+                    <div class="relative group">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-language text-slate-400 text-xs"></i>
+                        </div>
+                        <select id="keylog-mode" class="appearance-none pl-9 pr-8 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 text-xs font-bold text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-amber-500 outline-none cursor-pointer transition-all hover:border-amber-400">
+                            <option value="english">EN - English (Standard)</option>
+                            <option value="telex">VN - Tiếng Việt (Telex)</option>
+                        </select>
+                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                            <i class="fas fa-chevron-down text-slate-400 text-[10px]"></i>
+                        </div>
+                    </div>
 
-                    <button id="download-keylog-btn" class="text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/30 p-2 rounded-md transition-colors" title="Tải về .txt">
-                        <i class="fas fa-download"></i>
+                    <div class="w-px h-8 bg-slate-200 dark:bg-slate-700 mx-1 hidden sm:block"></div>
+
+                    <div class="flex bg-slate-100 dark:bg-slate-700/50 rounded-xl p-1 border border-slate-200 dark:border-slate-600">
+                        <button id="start-keylogger-btn" class="px-4 py-2 rounded-lg text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-600 hover:text-green-600 dark:hover:text-green-400 hover:shadow-sm transition-all flex items-center gap-2">
+                            <i class="fas fa-play"></i> <span class="hidden sm:inline">Start</span>
+                        </button>
+                        <div class="w-px bg-slate-200 dark:bg-slate-600 my-1"></div>
+                        <button id="stop-keylogger-btn" class="px-4 py-2 rounded-lg text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-600 hover:text-red-500 dark:hover:text-red-400 hover:shadow-sm transition-all flex items-center gap-2">
+                            <i class="fas fa-stop"></i> <span class="hidden sm:inline">Stop</span>
+                        </button>
+                    </div>
+
+                    <button id="clear-keylogger-btn" class="w-10 h-10 flex items-center justify-center rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 text-slate-500 hover:text-red-500 hover:border-red-200 dark:hover:border-red-900 transition-all shadow-sm" title="Xóa dữ liệu">
+                        <i class="fas fa-eraser"></i>
+                    </button>
+                    
+                    <button id="download-keylog-btn" class="flex items-center gap-2 px-4 py-2.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl font-bold text-sm shadow-lg shadow-amber-200 dark:shadow-none transition-all active:scale-95">
+                        <i class="fas fa-download"></i> <span>Xuất File</span>
                     </button>
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 flex-grow h-full min-h-[400px]">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 flex-1 min-h-0">
                 
-                <div class="flex flex-col h-full bg-slate-900 rounded-xl overflow-hidden shadow-inner border border-slate-700">
-                    <div class="bg-slate-800 px-4 py-2 border-b border-slate-700 flex justify-between items-center">
-                        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider"><i class="fas fa-terminal mr-2"></i>Raw Input Stream</h3>
-                        <span class="text-[10px] text-slate-500 font-mono">Real-time</span>
+                <div class="flex flex-col bg-[#0f172a] dark:bg-black rounded-2xl overflow-hidden border border-slate-700 shadow-2xl relative group">
+                    <div class="px-4 py-3 bg-slate-800/50 border-b border-slate-700 flex justify-between items-center backdrop-blur-sm">
+                        <div class="flex items-center gap-2">
+                            <i class="fas fa-terminal text-green-500 text-xs"></i>
+                            <span class="text-xs font-bold text-slate-300 tracking-wider uppercase">Raw Input Stream</span>
+                        </div>
+                        <div class="flex gap-1.5">
+                            <div class="w-2.5 h-2.5 rounded-full bg-red-500/20 border border-red-500"></div>
+                            <div class="w-2.5 h-2.5 rounded-full bg-yellow-500/20 border border-yellow-500"></div>
+                            <div class="w-2.5 h-2.5 rounded-full bg-green-500/20 border border-green-500"></div>
+                        </div>
                     </div>
-                    <textarea id="keylogger-log-raw" class="flex-grow w-full p-4 bg-transparent text-green-400 font-mono text-l resize-none outline-none leading-relaxed" readonly placeholder="Dữ liệu phím thô sẽ hiện ở đây..."></textarea>
+                    
+                    <textarea id="keylogger-log-raw" class="flex-1 w-full p-5 bg-transparent text-green-400 font-mono text-sm leading-relaxed resize-none outline-none custom-scrollbar selection:bg-green-500/30 selection:text-green-200" readonly placeholder="Dữ liệu nhập từ bàn phím"></textarea>
+                    
+                    <div class="absolute bottom-2 right-4 text-[10px] font-mono text-slate-600 select-none">Low-level Hook ID: 13</div>
                 </div>
 
                 <div class="flex flex-col h-full bg-white dark:bg-slate-800 rounded-xl overflow-hidden shadow-sm border border-slate-200 dark:border-slate-700">
@@ -683,6 +718,11 @@ export function renderWebcamControl() {
                         <div class="w-2.5 h-2.5 rounded-full bg-red-500 group-hover:scale-110 transition-transform"></div>
                         <span id="record-btn-text">Ghi hình</span>
                     </button>
+                    <div id="recording-ui" class="hidden absolute top-4 left-4 z-20 flex items-center gap-2 bg-red-600/90 backdrop-blur-sm text-white px-3 py-1.5 rounded-lg shadow-lg border border-red-500/50 animate-pulse">
+                        <div class="w-2 h-2 bg-white rounded-full"></div>
+                        <span class="text-xs font-bold font-mono tracking-widest">REC</span>
+                        <span id="record-timer" class="text-xs font-mono border-l border-white/20 pl-2 ml-1">00:00</span>
+                    </div>
                 </div>
             </div>
 
@@ -690,11 +730,6 @@ export function renderWebcamControl() {
                 
                 <canvas id="hidden-recorder-canvas" style="display:none;"></canvas>
 
-                <div id="recording-ui" class="hidden absolute top-4 left-4 z-20 flex items-center gap-2 bg-red-600/90 backdrop-blur-sm text-white px-3 py-1.5 rounded-lg shadow-lg border border-red-500/50 animate-pulse">
-                    <div class="w-2 h-2 bg-white rounded-full"></div>
-                    <span class="text-xs font-bold font-mono tracking-widest">REC</span>
-                    <span id="record-timer" class="text-xs font-mono border-l border-white/20 pl-2 ml-1">00:00</span>
-                </div>
 
                 <div id="webcam-stats-overlay" class="absolute top-4 right-4 z-20 bg-black/60 backdrop-blur-md p-3 rounded-xl border border-white/10 shadow-lg text-xs font-mono text-slate-300 hidden select-none pointer-events-none">
                     </div>
@@ -759,112 +794,150 @@ export function renderWebcamControl() {
 
 export function renderSystemControls() {
     return `
-        <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700">
-            <div class="flex items-center gap-2 mb-4 border-b border-slate-100 dark:border-slate-700 pb-2">
-                <i class="fas fa-desktop text-blue-600"></i>
-                <h3 class="text-sm font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wide">System Specification</h3>
-                <span id="spec-uptime" class="ml-auto text-xs font-mono text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/30 px-2 py-1 rounded">Uptime: ...</span>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 text-sm">
-                <div class="space-y-1">
-                    <p class="text-xs text-slate-400 dark:text-slate-500 font-bold uppercase">Processor (CPU)</p>
-                    <div class="flex items-start gap-2">
-                        <i class="fab fa-intel text-blue-400 mt-1"></i>
-                        <div>
-                            <p id="spec-cpu-name" class="font-semibold text-slate-800 dark:text-slate-200">Loading...</p>
-                            <p id="spec-cpu-cores" class="text-xs text-slate-500 dark:text-slate-400 font-mono">-</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="space-y-1">
-                    <p class="text-xs text-slate-400 dark:text-slate-500 font-bold uppercase">Memory (RAM)</p>
-                    <div class="flex items-start gap-2">
-                        <i class="fas fa-memory text-purple-400 mt-1"></i>
-                        <div>
-                            <p id="spec-ram-total-1" class="font-semibold text-slate-800 dark:text-slate-200">Loading...</p>
-                            <p id="spec-ram-detail" class="text-xs text-slate-500 dark:text-slate-400 font-mono">-</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="space-y-1">
-                    <p class="text-xs text-slate-400 dark:text-slate-500 font-bold uppercase">Graphics (GPU)</p>
-                    <div class="flex items-start gap-2">
-                        <i class="fas fa-tv text-green-400 mt-1"></i>
-                        <div>
-                            <p id="spec-gpu" class="font-semibold text-slate-800 dark:text-slate-200">Loading...</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="space-y-1">
-                    <p class="text-xs text-slate-400 dark:text-slate-500 font-bold uppercase">System & Network</p>
-                    <div class="flex items-start gap-2">
-                        <i class="fab fa-windows text-blue-400 mt-1"></i>
-                        <div>
-                            <p id="spec-os" class="font-semibold text-slate-800 dark:text-slate-200 text-xs">Loading...</p>
-                            <p id="spec-ip" class="text-xs whitespace-pre-line text-slate-500 dark:text-slate-400 font-mono mt-0.5">IP: -</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-700">
-                <p class="text-xs text-slate-400 dark:text-slate-500 font-bold uppercase mb-2">Storage</p>
-                <div class="flex items-center gap-2">
-                    <i class="fas fa-hdd text-orange-400"></i>
-                    <p id="spec-disk" class="text-xs font-mono text-slate-600 dark:text-slate-300 flex-grow">Loading drives...</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mt-6">
+        <div class="h-full flex flex-col gap-4 animate-fade-in-up">
             
-            <div class="bg-white dark:bg-slate-800 p-5 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 text-center transform hover:scale-[1.02] transition-transform duration-300">
-                <div class="w-14 h-14 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-full flex items-center justify-center mx-auto mb-3 border border-red-100 dark:border-red-900">
-                    <i class="fas fa-power-off text-2xl"></i>
+            <div class="relative overflow-hidden rounded-xl bg-gradient-to-r from-slate-900 to-slate-800 p-5 shadow-lg text-white shrink-0">
+                <div class="absolute top-0 right-0 -mt-8 -mr-8 w-32 h-32 bg-white/5 rounded-full blur-2xl"></div>
+                <div class="absolute bottom-0 left-0 -mb-8 -ml-8 w-32 h-32 bg-blue-500/10 rounded-full blur-2xl"></div>
+                
+                <div class="relative z-10 flex flex-row justify-between items-center gap-4">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/10 shadow-inner">
+                            <i class="fab fa-windows text-2xl text-blue-400"></i>
+                        </div>
+                        <div class="text-left">
+                            <h2 id="spec-os" class="text-lg font-bold tracking-tight leading-tight">System Analysis...</h2>
+                            <p class="text-slate-400 text-xs font-mono">Target Machine</p>
+                        </div>
+                    </div>
+                    
+                    <div class="text-right hidden sm:block">
+                        <span class="text-[10px] font-bold text-blue-400 uppercase tracking-widest block mb-0.5">Uptime</span>
+                        <span id="spec-uptime" class="text-sm font-mono font-bold text-slate-200">--:--:--</span>
+                    </div>
                 </div>
-                
-                <h3 class="text-lg font-bold text-slate-800 dark:text-white mb-1">Tắt Nguồn</h3>
-                <p class="text-slate-500 dark:text-slate-400 mb-5 text-xs">Tắt máy trạm ngay lập tức.</p>
-                
-                <button id="shutdown-btn" class="flip-btn w-full h-11 bg-red-600 text-white rounded-lg font-bold shadow-md shadow-red-200 dark:shadow-none hover:bg-red-700 transition-all active:scale-95 text-sm">
-                    <div class="flip-content-front">
-                        <span>SHUTDOWN</span>
-                    </div>
-                    <div class="flip-content-back bg-red-700 rounded-lg">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-                        </svg>
-                        <span class="ml-2">BYE!</span>
-                    </div>
-                </button>
             </div>
 
-            <div class="bg-white dark:bg-slate-800 p-5 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 text-center transform hover:scale-[1.02] transition-transform duration-300">
-                <div class="w-14 h-14 bg-yellow-50 dark:bg-yellow-900/20 text-yellow-600 dark:text-yellow-400 rounded-full flex items-center justify-center mx-auto mb-3 border border-yellow-100 dark:border-yellow-900">
-                    <i class="fas fa-redo-alt text-2xl"></i>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                
+                <div class="bg-white dark:bg-slate-800 p-3 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 hover:shadow-md transition-all group">
+                    <div class="flex items-center gap-2 mb-2">
+                        <div class="p-1.5 bg-blue-50 dark:bg-blue-900/20 rounded-lg text-blue-600 dark:text-blue-400">
+                            <i class="fas fa-microchip text-sm"></i>
+                        </div>
+                        <span class="text-[10px] font-bold text-slate-400 uppercase">CPU</span>
+                    </div>
+                    <h3 id="spec-cpu-name" class="font-bold text-slate-800 dark:text-white text-s leading-snug truncate" title="Loading...">Loading...</h3>
+                    <div class="mt-1 text-[10px] text-slate-500 dark:text-slate-400 font-mono truncate">
+                        <i class="fas fa-layer-group mr-1"></i><span id="spec-cpu-cores">-- Cores</span>
+                    </div>
                 </div>
-                
-                <h3 class="text-lg font-bold text-slate-800 dark:text-white mb-1">Khởi Động Lại</h3>
-                <p class="text-slate-500 dark:text-slate-400 mb-5 text-xs">Khởi động lại máy trạm.</p>
-                
-                <button id="restart-btn" class="flip-btn w-full h-11 bg-yellow-500 text-white rounded-lg font-bold shadow-md shadow-yellow-200 dark:shadow-none hover:bg-yellow-600 transition-all active:scale-95 text-sm">
-                    <div class="flip-content-front">
-                        <span>RESTART</span>
+
+                <div class="bg-white dark:bg-slate-800 p-3 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 hover:shadow-md transition-all group">
+                    <div class="flex items-center gap-2 mb-2">
+                        <div class="p-1.5 bg-purple-50 dark:bg-purple-900/20 rounded-lg text-purple-600 dark:text-purple-400">
+                            <i class="fas fa-memory text-sm"></i>
+                        </div>
+                        <span class="text-[10px] font-bold text-slate-400 uppercase">RAM</span>
                     </div>
-                    <div class="flip-content-back bg-yellow-600 rounded-lg">
-                        <svg class="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-                        </svg>
-                        <span class="ml-2">LOADING...</span>
+                    <h3 id="spec-ram-total-1" class="font-bold text-slate-800 dark:text-white text-s leading-snug truncate">Loading...</h3>
+                    <div class="mt-1 text-[10px] text-slate-500 dark:text-slate-400 font-mono truncate">
+                        <i class="fas fa-info-circle mr-1"></i><span id="spec-ram-detail">--</span>
                     </div>
-                </button>
+                </div>
+
+                <div class="bg-white dark:bg-slate-800 p-3 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 hover:shadow-md transition-all group">
+                    <div class="flex items-center gap-2 mb-2">
+                        <div class="p-1.5 bg-green-50 dark:bg-green-900/20 rounded-lg text-green-600 dark:text-green-400">
+                            <i class="fas fa-tv text-sm"></i>
+                        </div>
+                        <span class="text-[10px] font-bold text-slate-400 uppercase">GPU</span>
+                    </div>
+                    <h3 id="spec-gpu" class="font-bold text-slate-800 dark:text-white text-s leading-snug truncate">Loading...</h3>
+                    <div class="mt-1 text-[10px] text-slate-500 dark:text-slate-400 font-mono truncate">
+                        <i class="fas fa-video mr-1"></i><span>Adapter</span>
+                    </div>
+                </div>
+
+                <div class="bg-white dark:bg-slate-800 p-3 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 hover:shadow-md transition-all group">
+                    <div class="flex items-center gap-2 mb-2">
+                        <div class="p-1.5 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg text-indigo-600 dark:text-indigo-400">
+                            <i class="fas fa-network-wired text-sm"></i>
+                        </div>
+                        <span class="text-[10px] font-bold text-slate-400 uppercase">NET</span>
+                    </div>
+                    <h3 id="spec-ip" class="font-bold text-slate-800 dark:text-white text-s leading-snug truncate font-mono">Loading...</h3>
+                    <div class="mt-1 text-[10px] text-slate-500 dark:text-slate-400 font-mono truncate">
+                        <i class="fas fa-wifi mr-1"></i><span>IP Address</span>
+                    </div>
+                </div>
             </div>
+
+            <div class="bg-white dark:bg-slate-800 p-3 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 flex items-center gap-3">
+                <div class="p-2 bg-orange-50 dark:bg-orange-900/20 rounded-lg text-orange-600 dark:text-orange-400 shrink-0">
+                    <i class="fas fa-hdd text-sm"></i>
+                </div>
+                <div class="flex-1 overflow-hidden">
+                    <span class="text-[10px] font-bold text-slate-400 uppercase block mb-0.5">Storage Devices</span>
+                    <div id="spec-disk" class="text-xs font-mono text-slate-700 dark:text-slate-300 truncate">Loading drives...</div>
+                </div>
+            </div>
+
+            <div class="mt-2 pt-4 border-t border-slate-200 dark:border-slate-700 border-dashed">
+                <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-2 justify-center">
+                    <i class="fas fa-power-off text-slate-400"></i> Power Actions
+                </h3>
+                
+                <div class="flex justify-center">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-3xl mt-2">
+                        
+                        <div class="bg-white dark:bg-slate-800 p-5 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 text-center transform hover:scale-[1.02] transition-transform duration-300">
+                            <div class="w-14 h-14 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-full flex items-center justify-center mx-auto mb-3 border border-red-100 dark:border-red-900">
+                                <i class="fas fa-power-off text-2xl"></i>
+                            </div>
+                            
+                            <h3 class="text-lg font-bold text-slate-800 dark:text-white mb-1">Tắt Nguồn</h3>
+                            <p class="text-slate-500 dark:text-slate-400 mb-5 text-xs">Tắt máy trạm ngay lập tức.</p>
+                            
+                            <button id="shutdown-btn" class="flip-btn w-full h-11 bg-red-600 text-white rounded-lg font-bold shadow-md shadow-red-200 dark:shadow-none hover:bg-red-700 transition-all active:scale-95 text-sm">
+                                <div class="flip-content-front">
+                                    <span>SHUTDOWN</span>
+                                </div>
+                                <div class="flip-content-back bg-red-700 rounded-lg">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                                    </svg>
+                                    <span class="ml-2">BYE!</span>
+                                </div>
+                            </button>
+                        </div>
+
+                        <div class="bg-white dark:bg-slate-800 p-5 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 text-center transform hover:scale-[1.02] transition-transform duration-300">
+                            <div class="w-14 h-14 bg-yellow-50 dark:bg-yellow-900/20 text-yellow-600 dark:text-yellow-400 rounded-full flex items-center justify-center mx-auto mb-3 border border-yellow-100 dark:border-yellow-900">
+                                <i class="fas fa-redo-alt text-2xl"></i>
+                            </div>
+                            
+                            <h3 class="text-lg font-bold text-slate-800 dark:text-white mb-1">Khởi Động Lại</h3>
+                            <p class="text-slate-500 dark:text-slate-400 mb-5 text-xs">Khởi động lại máy trạm.</p>
+                            
+                            <button id="restart-btn" class="flip-btn w-full h-11 bg-yellow-500 text-white rounded-lg font-bold shadow-md shadow-yellow-200 dark:shadow-none hover:bg-yellow-600 transition-all active:scale-95 text-sm">
+                                <div class="flip-content-front">
+                                    <span>RESTART</span>
+                                </div>
+                                <div class="flip-content-back bg-yellow-600 rounded-lg">
+                                    <svg class="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                                    </svg>
+                                    <span class="ml-2">LOADING...</span>
+                                </div>
+                            </button>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
         </div>
-        
     `;
 }
 
@@ -983,12 +1056,36 @@ export function renderAutomationLayout() {
     `;
 }
 
+function renderAboutHeader() {
+    return `<div class="flex flex-col md:flex-row justify-between items-end mb-10 gap-10">
+            <div class="flex items-center gap-4">
+                <div class="w-32 h-16 rounded-xl bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 flex items-center justify-center p-2">
+                     <img src="./Fit-logo-blue.png" alt="FIT Logo" class="w-full h-full object-contain opacity-90">
+                </div>
+                <div>
+                    <p class="font-bold text-slate-800 dark:text-slate-200 text-lg">Trường ĐH Khoa học Tự nhiên - ĐHQG TP.HCM</p>
+                    <p class="font-bold text-slate-600 dark:text-slate-200 text-lg">Khoa Công nghệ Thông tin</p>
+                    <p class="text-xs text-slate-400 dark:text-slate-400">Cơ sở 1: 227 Nguyễn Văn Cừ, Phường Chợ Quán, TP. Hồ Chí Minh</p>
+                    <p class="text-xs text-slate-400 dark:text-slate-400">Cơ sở 2: Khu đô thị ĐHQG-HCM, Phường Đông Hòa, TP. Hồ Chí Minh</p>
+                </div>
+            </div>
+
+            <div class="text-left md:text-right">
+                <div class="inline-flex items-center gap-2 px-3 py-1 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 rounded-full text-xs font-bold mb-2">
+                    <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+                    Lớp 24CTT5
+                </div>
+                <p class="text-sm font-semibold text-slate-700 dark:text-slate-300">Mạng máy tính (Computer Networks)</p>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">GVHD: <span class="font-medium text-slate-800 dark:text-slate-200">ThS. Đỗ Hoàng Cường</span></p>
+            </div>
+        </div>`;
+}
+
 
 // --- PHẦN 1: LAYOUT CHÍNH ---
 export function renderAboutLayout() {
     return `
     <div class="max-w-5xl mx-auto pb-12 space-y-10 animate-fade-in-up">
-        ${renderAboutHeader()}
         ${renderProjectOverview()}
         ${renderArchitectureSection()}
         ${renderTechSpecs()}
@@ -1053,93 +1150,88 @@ function renderTechSpecs() {
 
 function renderProjectOverview() {
     return `
-    <div class="relative mb-8">
-        <div class="absolute top-10 left-1/2 -translate-x-1/2 w-3/4 h-64 bg-blue-500/10 dark:bg-blue-900/20 rounded-full blur-[100px] -z-10"></div>
+    <div class="relative mb-16">
+        <div class="absolute top-10 left-1/2 -translate-x-1/2 w-full max-w-3xl h-80 bg-blue-500/10 dark:bg-blue-900/20 rounded-full blur-[120px] -z-10"></div>
 
-        <div class="text-center pt-10 pb-6">
-            <div class="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-gradient-to-br from-blue-600 to-indigo-600 text-white mb-6 shadow-xl shadow-blue-500/30 transform hover:scale-110 transition-transform duration-500">
-                <i class="fas fa-network-wired text-4xl"></i>
+        <div class="text-center py-20">
+            
+            <div class="inline-flex items-center justify-center w-28 h-28 rounded-[2.5rem] rounded-3xl bg-gradient-to-br from-blue-600 to-indigo-600 text-white mb-6 shadow-xl shadow-blue-500/30 transform hover:scale-110 transition-transform duration-500">
+    <svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+<style>
+    .st_dynamic_stroke {
+        fill: none;
+        stroke: #FFFFFF;
+        stroke-width: 5;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+    .st_dynamic_fill {
+        fill: #FFFFFF;
+    }
+</style>
+<g>
+    <path class="st_dynamic_stroke" d="M12,44 A 23,23 0 1,1 48,47"/>
+    <polygon class="st_dynamic_fill" points="52,44 40,36 44,54 "/>
+
+    <line class="st_dynamic_stroke" x1="32" y1="32" x2="50" y2="50"/>
+    <polygon class="st_dynamic_fill" points="54,54 38,52 52,38 "/>
+</g>
+</svg>
             </div>
             
-            <h1 class="text-2xl font-extrabold text-slate-800 dark:text-white mb-4 tracking-tight">
+            <h2 class="text-4xl md:text-5xl font-extrabold text-slate-900 dark:text-white mb-6 tracking-tight leading-tight">
                 Remote Control System <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-500">Pro</span>
-            </h1>
+            </h2>
             
-            <p class="text-xl text-slate-500 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed font-light">
-                Hệ thống điều khiển và giám sát máy trạm tập trung. <br class="hidden md:block" />
-                Sức mạnh của <b class="text-slate-700 dark:text-slate-200">Real-time Control</b> và <b class="text-slate-700 dark:text-slate-200">Live Streaming</b>.
+            <p class="text-xl md:text-2xl text-slate-500 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed font-light px-4">
+                Hệ thống điều khiển và giám sát từ xa, cho phép điều khiển máy trạm một cách hiệu quả và an toàn.
             </p>
         </div>
 
-        <div class="flex flex-wrap justify-center gap-3 mb-12 animate-fade-in-up" style="animation-delay: 0.1s;">
-            <span class="px-4 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs font-bold uppercase tracking-wider border border-slate-200 dark:border-slate-700 flex items-center gap-2">
-                <i class="fab fa-microsoft text-blue-500"></i> .NET 8 Core
+        <div class="flex flex-wrap justify-center gap-4 mb-16 animate-fade-in-up" style="animation-delay: 0.1s;">
+            <span class="px-5 py-2 rounded-full bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-sm font-bold uppercase tracking-wider border border-slate-200 dark:border-slate-700 shadow-sm flex items-center gap-2">
+                <i class="fab fa-microsoft text-blue-500 text-lg"></i> .NET 8 Core
             </span>
-            <span class="px-4 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs font-bold uppercase tracking-wider border border-slate-200 dark:border-slate-700 flex items-center gap-2">
-                <i class="fas fa-video text-rose-500"></i> UDP Stream
+            <span class="px-5 py-2 rounded-full bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-sm font-bold uppercase tracking-wider border border-slate-200 dark:border-slate-700 shadow-sm flex items-center gap-2">
+                <i class="fas fa-video text-rose-500 text-lg"></i> UDP Stream
             </span>
-            <span class="px-4 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs font-bold uppercase tracking-wider border border-slate-200 dark:border-slate-700 flex items-center gap-2">
-                <i class="fab fa-js text-yellow-400"></i> Vanilla JS
+            <span class="px-5 py-2 rounded-full bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-sm font-bold uppercase tracking-wider border border-slate-200 dark:border-slate-700 shadow-sm flex items-center gap-2">
+                <i class="fab fa-js text-yellow-400 text-lg"></i> Vanilla JS
             </span>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto animate-fade-in-up" style="animation-delay: 0.2s;">
-            <div class="p-6 rounded-2xl bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-md transition-shadow text-center md:text-left">
-                <div class="w-10 h-10 rounded-lg bg-blue-50 dark:bg-blue-900/30 text-blue-600 flex items-center justify-center text-lg mb-3 mx-auto md:mx-0">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto animate-fade-in-up" style="animation-delay: 0.2s;">
+            <div class="p-8 rounded-2xl bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 shadow-lg hover:shadow-xl transition-all hover:-translate-y-1 text-center md:text-left group">
+                <div class="w-12 h-12 rounded-xl bg-blue-50 dark:bg-blue-900/30 text-blue-600 flex items-center justify-center text-xl mb-4 mx-auto md:mx-0 group-hover:bg-blue-600 group-hover:text-white transition-colors">
                     <i class="fas fa-tachometer-alt"></i>
                 </div>
-                <h3 class="font-bold text-slate-800 dark:text-white mb-1">Hiệu năng cao</h3>
-                <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                <h3 class="font-bold text-lg text-slate-800 dark:text-white mb-2">Hiệu năng cao</h3>
+                <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
                     Sử dụng giao thức <strong>UDP Fragment</strong> để truyền tải Video 60FPS mượt mà với độ trễ thấp nhất.
                 </p>
             </div>
 
-            <div class="p-6 rounded-2xl bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-md transition-shadow text-center md:text-left">
-                <div class="w-10 h-10 rounded-lg bg-purple-50 dark:bg-purple-900/30 text-purple-600 flex items-center justify-center text-lg mb-3 mx-auto md:mx-0">
+            <div class="p-8 rounded-2xl bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 shadow-lg hover:shadow-xl transition-all hover:-translate-y-1 text-center md:text-left group">
+                <div class="w-12 h-12 rounded-xl bg-purple-50 dark:bg-purple-900/30 text-purple-600 flex items-center justify-center text-xl mb-4 mx-auto md:mx-0 group-hover:bg-purple-600 group-hover:text-white transition-colors">
                     <i class="fas fa-project-diagram"></i>
                 </div>
-                <h3 class="font-bold text-slate-800 dark:text-white mb-1">Kiến trúc Hybrid</h3>
-                <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                    Kết hợp <strong>TCP (SignalR)</strong> cho lệnh điều khiển tin cậy và <strong>UDP</strong> cho dữ liệu đa phương tiện.
+                <h3 class="font-bold text-lg text-slate-800 dark:text-white mb-2">Kiến trúc Hybrid</h3>
+                <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+                    Kết hợp <strong>TCP</strong> cho lệnh điều khiển tin cậy và <strong>UDP</strong> cho dữ liệu đa phương tiện.
                 </p>
             </div>
 
-            <div class="p-6 rounded-2xl bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-md transition-shadow text-center md:text-left">
-                <div class="w-10 h-10 rounded-lg bg-green-50 dark:bg-green-900/30 text-green-600 flex items-center justify-center text-lg mb-3 mx-auto md:mx-0">
+            <div class="p-8 rounded-2xl bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 shadow-lg hover:shadow-xl transition-all hover:-translate-y-1 text-center md:text-left group">
+                <div class="w-12 h-12 rounded-xl bg-green-50 dark:bg-green-900/30 text-green-600 flex items-center justify-center text-xl mb-4 mx-auto md:mx-0 group-hover:bg-green-600 group-hover:text-white transition-colors">
                     <i class="fas fa-user-secret"></i>
                 </div>
-                <h3 class="font-bold text-slate-800 dark:text-white mb-1">Giám sát sâu</h3>
-                <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                <h3 class="font-bold text-lg text-slate-800 dark:text-white mb-2">Giám sát sâu</h3>
+                <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
                     Can thiệp sâu vào hệ thống: Registry, Process Hooking, Input Capture và Reverse Shell.
                 </p>
             </div>
         </div>
     </div>`;
-}
-
-function renderAboutHeader() {
-    return `<div class="flex flex-col md:flex-row justify-between items-end mb-10 gap-10">
-            <div class="flex items-center gap-4">
-                <div class="w-32 h-16 rounded-xl bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 flex items-center justify-center p-2">
-                    <img src="./Fit-logo-blue.png" alt="FIT Logo" class="w-full h-full object-contain opacity-90">
-                </div>
-                <div>
-                    <p class="font-bold text-slate-800 dark:text-slate-200 text-lg">Trường ĐH Khoa học Tự nhiên - ĐHQG TP.HCM</p>
-                    <p class="font-bold text-slate-600 dark:text-slate-200 text-lg">Khoa Công nghệ Thông tin</p>
-                    <p class="text-xs text-slate-400 dark:text-slate-400">Cơ sở 1: 227 Nguyễn Văn Cừ, Phường Chợ Quán, TP. Hồ Chí Minh</p>
-                    <p class="text-xs text-slate-400 dark:text-slate-400">Cơ sở 2: Khu đô thị ĐHQG-HCM, Phường Đông Hòa, TP. Hồ Chí Minh</p>
-                </div>
-            </div>
-
-            <div class="text-left md:text-right">
-                <div class="inline-flex items-center gap-2 px-3 py-1 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 rounded-full text-xs font-bold mb-2">
-                    <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
-                    Lớp 24CTT5
-                </div>
-                <p class="text-sm font-semibold text-slate-700 dark:text-slate-300">Mạng máy tính (Computer Networks)</p>
-                <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">GVHD: <span class="font-medium text-slate-800 dark:text-slate-200">ThS. Đỗ Hoàng Cường</span></p>
-            </div>
-        </div>`;
 }
 
 function renderAboutFooter() {
@@ -1889,29 +1981,53 @@ function getGuideData() {
     ];
 }
 
-// [File: public/Js/views.js]
-
 function renderTeamSection() {
     return `
-    <div class="border-t border-slate-200 dark:border-slate-800 pt-10 mt-16">
+    <div class="mt-20">
+        
+        <div class="flex items-center gap-4 mb-12">
+            <div class="h-px bg-slate-200 dark:bg-slate-700 flex-1"></div>
+            <span class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em]">Academic Project Info</span>
+            <div class="h-px bg-slate-200 dark:bg-slate-700 flex-1"></div>
+        </div>
+
+        <div class="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-8 border border-slate-100 dark:border-slate-700 mb-10 flex flex-col md:flex-row justify-between items-center gap-6 text-center md:text-left">
+            <div class="flex items-center gap-6">
+                 <div class="w-16 h-16 bg-white dark:bg-slate-800 rounded-full flex items-center justify-center shadow-sm border border-slate-200 dark:border-slate-600 text-blue-900 dark:text-blue-400 text-2xl">
+                    <i class="fas fa-university"></i>
+                </div>
+                <div>
+                    <h4 class="font-bold text-slate-800 dark:text-white text-lg">ĐH Khoa học Tự nhiên - ĐHQG TP.HCM</h4>
+                    <p class="font-medium text-slate-600 dark:text-slate-300">Khoa Công nghệ Thông tin</p>
+                    <p class="text-xs text-slate-400 mt-1">227 Nguyễn Văn Cừ, Quận 5, TP.HCM</p>
+                </div>
+            </div>
+
+            <div class="flex flex-col md:items-end gap-1">
+                <span class="px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full text-xs font-bold border border-blue-200 dark:border-blue-800">
+                    Lớp 24CTT5
+                </span>
+                <p class="text-sm font-bold text-slate-700 dark:text-slate-200 mt-1">Mạng máy tính (Computer Networks)</p>
+                <p class="text-xs text-slate-500 dark:text-slate-400">GVHD: <span class="font-bold text-slate-800 dark:text-white">ThS. Đỗ Hoàng Cường</span></p>
+            </div>
+        </div>
 
         <div>
-            <h4 class="text-sm font-bold text-slate-800 dark:text-white mb-6 flex items-center">
-                <span class="w-1 h-4 bg-indigo-500 rounded-full mr-3"></span>
+            <h4 class="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-6 text-center md:text-left">
                 Thành viên thực hiện
             </h4>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 
-                <div class="group relative bg-white dark:bg-slate-800 rounded-2xl p-5 border border-slate-200 dark:border-slate-700 hover:border-indigo-500/50 dark:hover:border-indigo-500/50 hover:shadow-lg transition-all duration-300">
+                <div class="group relative bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-200 dark:border-slate-700 hover:border-indigo-500 hover:shadow-indigo-500/10 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
                     <div class="flex items-center gap-4">
-                        <div class="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-500 to-blue-500 text-white flex items-center justify-center font-bold text-lg shadow-md group-hover:scale-110 transition-transform">
+                        <div class="w-14 h-14 rounded-full bg-gradient-to-br from-indigo-500 to-blue-500 text-white flex items-center justify-center font-bold text-xl shadow-lg shadow-indigo-500/30 group-hover:rotate-12 transition-transform duration-300">
                             K
                         </div>
                         <div>
-                            <h5 class="font-bold text-slate-800 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">Hà Đăng Khôi</h5>
+                            <h5 class="font-bold text-lg text-slate-800 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">Hà Đăng Khôi</h5>
                             <div class="flex items-center gap-2 mt-1">
-                                <span class="text-[10px] px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-700 text-slate-500 font-mono border border-slate-200 dark:border-slate-600">
+                                <span class="text-xs px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 font-mono border border-slate-200 dark:border-slate-600 font-medium">
                                     24120348
                                 </span>
                             </div>
@@ -1919,15 +2035,15 @@ function renderTeamSection() {
                     </div>
                 </div>
 
-                <div class="group relative bg-white dark:bg-slate-800 rounded-2xl p-5 border border-slate-200 dark:border-slate-700 hover:border-indigo-500/50 dark:hover:border-indigo-500/50 hover:shadow-lg transition-all duration-300">
+                <div class="group relative bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-200 dark:border-slate-700 hover:border-cyan-500 hover:shadow-cyan-500/10 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
                     <div class="flex items-center gap-4">
-                        <div class="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 text-white flex items-center justify-center font-bold text-lg shadow-md group-hover:scale-110 transition-transform">
+                        <div class="w-14 h-14 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 text-white flex items-center justify-center font-bold text-xl shadow-lg shadow-cyan-500/30 group-hover:rotate-12 transition-transform duration-300">
                             K
                         </div>
                         <div>
-                            <h5 class="font-bold text-slate-800 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">Vương Đắc Gia Khiêm</h5>
+                            <h5 class="font-bold text-lg text-slate-800 dark:text-white group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors">Vương Đắc Gia Khiêm</h5>
                             <div class="flex items-center gap-2 mt-1">
-                                <span class="text-[10px] px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-700 text-slate-500 font-mono border border-slate-200 dark:border-slate-600">
+                                <span class="text-xs px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 font-mono border border-slate-200 dark:border-slate-600 font-medium">
                                     24120342
                                 </span>
                             </div>
@@ -1935,15 +2051,15 @@ function renderTeamSection() {
                     </div>
                 </div>
 
-                <div class="group relative bg-white dark:bg-slate-800 rounded-2xl p-5 border border-slate-200 dark:border-slate-700 hover:border-indigo-500/50 dark:hover:border-indigo-500/50 hover:shadow-lg transition-all duration-300">
+                <div class="group relative bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-200 dark:border-slate-700 hover:border-pink-500 hover:shadow-pink-500/10 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
                     <div class="flex items-center gap-4">
-                        <div class="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 text-white flex items-center justify-center font-bold text-lg shadow-md group-hover:scale-110 transition-transform">
+                        <div class="w-14 h-14 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 text-white flex items-center justify-center font-bold text-xl shadow-lg shadow-pink-500/30 group-hover:rotate-12 transition-transform duration-300">
                             H
                         </div>
                         <div>
-                            <h5 class="font-bold text-slate-800 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">Lê Đình Huy</h5>
+                            <h5 class="font-bold text-lg text-slate-800 dark:text-white group-hover:text-pink-600 dark:group-hover:text-pink-400 transition-colors">Lê Đình Huy</h5>
                             <div class="flex items-center gap-2 mt-1">
-                                <span class="text-[10px] px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-700 text-slate-500 font-mono border border-slate-200 dark:border-slate-600">
+                                <span class="text-xs px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 font-mono border border-slate-200 dark:border-slate-600 font-medium">
                                     24120324
                                 </span>
                             </div>
