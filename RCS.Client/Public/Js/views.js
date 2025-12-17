@@ -1,46 +1,94 @@
 import { getSortIcon, getEmptyRow, getLoadingRow } from './utils.js';
 import { state } from './config.js';
 
-// --- APP VIEW ---
+
+
 export function renderAppLayout() {
     return `
-        <div class="h-full w-full relative flex flex-col">
+        <div class="h-full w-full flex flex-col space-y-5">
             
-            <div class="flex items-center space-x-3 bg-white dark:bg-slate-800 p-3 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700 transition-colors shrink-0 mb-4 z-20">
-                <button id="list-apps-btn" class="btn-primary bg-blue-600 text-white px-4 py-2 rounded-lg shadow-md shadow-blue-200 dark:shadow-none hover:bg-blue-700 transition-all">Làm Mới</button>
-                
-                <div class="uiv-search-box flex-grow">
-                    <svg class="fill-gray-500 dark:fill-gray-400" viewBox="0 0 1920 1920" xmlns="http://www.w3.org/2000/svg"><path d="M790.588 1468.235c-373.722 0-677.647-303.924-677.647-677.647 0-373.722 303.925-677.647 677.647-677.647 373.723 0 677.647 303.925 677.647 677.647 0 373.723-303.924 677.647-677.647 677.647Zm596.781-160.715c120.396-138.692 193.807-319.285 193.807-516.932C1581.176 354.748 1226.428 0 790.588 0S0 354.748 0 790.588s354.748 790.588 790.588 790.588c197.647 0 378.24-73.411 516.932-193.807l516.028 516.142 79.963-79.963-516.142-516.028Z" fill-rule="evenodd"></path></svg>
-                    <input id="app-search" type="text" placeholder="Tìm ứng dụng..." class="uiv-search-input uiv-full-width dark:bg-slate-700 dark:text-white dark:placeholder-slate-400 dark:border-slate-600">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 shrink-0">
+                <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm flex items-center justify-between relative overflow-hidden group">
+                    <div class="absolute right-0 top-0 w-24 h-24 bg-blue-500/10 rounded-full -mr-6 -mt-6 transition-transform group-hover:scale-150"></div>
+                    <div>
+                        <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Tổng ứng dụng</p>
+                        <h3 id="stat-app-total" class="text-2xl font-black text-slate-800 dark:text-white mt-1">0</h3>
+                    </div>
+                    <div class="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center text-lg shadow-sm">
+                        <i class="fas fa-layer-group"></i>
+                    </div>
                 </div>
-                
-                <div class="uiv-search-box ml-4">
-                     <svg class="fill-gray-500 dark:fill-gray-400" viewBox="0 0 1920 1920" xmlns="http://www.w3.org/2000/svg"><path d="M790.588 1468.235c-373.722 0-677.647-303.924-677.647-677.647 0-373.722 303.925-677.647 677.647-677.647 373.723 0 677.647 303.925 677.647 677.647 0 373.723-303.924 677.647-677.647 677.647Zm596.781-160.715c120.396-138.692 193.807-319.285 193.807-516.932C1581.176 354.748 1226.428 0 790.588 0S0 354.748 0 790.588s354.748 790.588 790.588 790.588c197.647 0 378.24-73.411 516.932-193.807l516.028 516.142 79.963-79.963-516.142-516.028Z" fill-rule="evenodd"></path></svg>
-                    <input id="app-search name" type="text" placeholder="Nhập tên" class="uiv-search-input uiv-anim-width-app-search dark:bg-slate-700 dark:text-white dark:placeholder-slate-400 dark:border-slate-600">
+
+                <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm flex items-center justify-between relative overflow-hidden group">
+                    <div class="absolute right-0 top-0 w-24 h-24 bg-green-500/10 rounded-full -mr-6 -mt-6 transition-transform group-hover:scale-150"></div>
+                    <div>
+                        <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Đang chạy</p>
+                        <h3 id="stat-app-running" class="text-2xl font-black text-slate-800 dark:text-white mt-1">0</h3>
+                    </div>
+                    <div class="w-10 h-10 rounded-xl bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400 flex items-center justify-center text-lg shadow-sm">
+                        <i class="fas fa-bolt"></i>
+                    </div>
                 </div>
-                <button id="start-app-btn" class="btn-primary bg-green-600 text-white px-4 py-2 shadow-md shadow-green-200 dark:shadow-none rounded-lg">Mở</button>
+
+                <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm flex items-center justify-between relative overflow-hidden group">
+                    <div class="absolute right-0 top-0 w-24 h-24 bg-red-500/10 rounded-full -mr-6 -mt-6 transition-transform group-hover:scale-150"></div>
+                    <div>
+                        <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Đã dừng</p>
+                        <h3 id="stat-app-stopped" class="text-2xl font-black text-slate-800 dark:text-white mt-1">0</h3>
+                    </div>
+                    <div class="w-10 h-10 rounded-xl bg-red-50 dark:bg-red-900/30 text-red-500 dark:text-red-400 flex items-center justify-center text-lg shadow-sm">
+                        <i class="fas fa-power-off"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-slate-800 p-2 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 shrink-0">
+                
+                <div class="flex-1 flex gap-2">
+                    <div class="uiv-search-box flex-1 max-w-md h-10">
+                         <svg class="fill-slate-400 dark:fill-slate-500" viewBox="0 0 1920 1920" xmlns="http://www.w3.org/2000/svg"><path d="M790.588 1468.235c-373.722 0-677.647-303.924-677.647-677.647 0-373.722 303.925-677.647 677.647-677.647 373.723 0 677.647 303.925 677.647 677.647 0 373.723-303.924 677.647-677.647 677.647Zm596.781-160.715c120.396-138.692 193.807-319.285 193.807-516.932C1581.176 354.748 1226.428 0 790.588 0S0 354.748 0 790.588s354.748 790.588 790.588 790.588c197.647 0 378.24-73.411 516.932-193.807l516.028 516.142 79.963-79.963-516.142-516.028Z" fill-rule="evenodd"></path></svg>
+                        <input id="app-search" type="text" placeholder="Tìm kiếm ứng dụng..." class="w-full h-full pl-10 pr-4 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all dark:text-white dark:placeholder-slate-500">
+                    </div>
+                    <button id="list-apps-btn" class="w-10 h-10 flex items-center justify-center bg-slate-100 dark:bg-slate-700 hover:bg-blue-50 dark:hover:bg-blue-900/30 text-slate-600 dark:text-slate-300 hover:text-blue-600 rounded-xl transition-colors border border-slate-200 dark:border-slate-600" title="Làm mới">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                </div>
+
+                <div class="flex items-center gap-2 border-l border-slate-200 dark:border-slate-700 pl-4">
+                    <div class="relative">
+                        <input id="app-search name" type="text" placeholder="Nhập tên / đường dẫn" class="h-10 pl-3 pr-3 w-48 focus:w-64 transition-all bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-xl text-sm outline-none dark:text-white text-slate-700">
+                    </div>
+                    <button id="start-app-btn" class="h-10 px-4 bg-green-600 hover:bg-green-700 text-white text-sm font-bold rounded-xl shadow-lg shadow-green-500/30 transition-all flex items-center gap-2 active:scale-95">
+                        <i class="fas fa-rocket"></i> <span class="hidden sm:inline">Chạy Lệnh</span>
+                    </button>
+                </div>
             </div>
             
-            <div class="absolute inset-0 top-[88px] bg-white dark:bg-slate-800 rounded-lg shadow-inner overflow-hidden flex flex-col border border-gray-100 dark:border-slate-700">
-                
-                <div class="overflow-y-auto flex-1 custom-scrollbar w-full h-full">
-                    <table class="min-w-full divide-y divide-gray-200 dark:divide-slate-700 w-full">
-                        <thead class="bg-gray-100 dark:bg-slate-900 sticky top-0 z-10 shadow-sm">
+            <div class="flex-1 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden flex flex-col relative">
+                <div class="overflow-y-auto flex-1 custom-scrollbar w-full">
+                    <table class="w-full text-left border-collapse">
+                        <thead class="bg-slate-50/90 dark:bg-slate-700/90 sticky top-0 z-10 backdrop-blur-md shadow-sm">
                             <tr>
-                                <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 dark:text-slate-300 uppercase cursor-pointer select-none" onclick="window.handleSortApp('name')">
-                                    <div class="flex items-center gap-1">Tên ${getSortIcon('name', state.currentAppSort)}</div>
+                                <th class="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-300 uppercase tracking-wider cursor-pointer select-none group hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors" onclick="window.handleSortApp('name')">
+                                    <div class="flex items-center gap-2">
+                                        Tên Ứng Dụng ${getSortIcon('name', state.currentAppSort)}
+                                    </div>
                                 </th>
-                                <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 dark:text-slate-300 uppercase">Đường Dẫn</th>
-                                <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 dark:text-slate-300 uppercase">Trạng Thái</th>
-                                <th class="px-6 py-3 text-center text-xs font-bold text-gray-700 dark:text-slate-300 uppercase">Thao Tác</th>
+                                <th class="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-300 uppercase tracking-wider">Đường Dẫn Hệ Thống</th>
+                                <th class="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-300 uppercase tracking-wider text-center">Trạng Thái</th>
+                                <th class="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-300 uppercase tracking-wider text-right">Hành Động</th>
                             </tr>
                         </thead>
-                        <tbody id="app-list-body" class="bg-white dark:bg-slate-800 divide-y divide-gray-200 dark:divide-slate-700">
+                        <tbody id="app-list-body" class="divide-y divide-slate-100 dark:divide-slate-700/50">
                             ${getLoadingRow(4)}
                         </tbody>
                     </table>
-                    
-                    </div>
+                </div>
+                
+                <div class="bg-slate-50 dark:bg-slate-900 px-6 py-2 border-t border-slate-200 dark:border-slate-700 text-[10px] text-slate-400 flex justify-between items-center">
+                    <span>* Dữ liệu được cập nhật từ Registry & Process List</span>
+                    <span id="app-footer-count">0 items</span>
+                </div>
             </div>
         </div>
     `;
@@ -48,43 +96,92 @@ export function renderAppLayout() {
 
 export function updateAppTable(apps) {
     const tbody = document.getElementById('app-list-body');
-    if (!tbody) return;
-    if (!apps || apps.length === 0) { tbody.innerHTML = getEmptyRow(4); return; }
+    const footerCount = document.getElementById('app-footer-count');
+    
+    // Elements thống kê
+    const statTotal = document.getElementById('stat-app-total');
+    const statRunning = document.getElementById('stat-app-running');
+    const statStopped = document.getElementById('stat-app-stopped');
 
+    if (!tbody) return;
+    if (!apps || apps.length === 0) { 
+        tbody.innerHTML = getEmptyRow(4); 
+        if(statTotal) statTotal.textContent = '0';
+        return; 
+    }
+
+    // --- 1. TÍNH TOÁN THỐNG KÊ ---
+    const total = apps.length;
+    const running = apps.filter(a => a.status === 'Running').length;
+    const stopped = total - running;
+
+    if (statTotal) statTotal.textContent = total;
+    if (statRunning) statRunning.textContent = running;
+    if (statStopped) statStopped.textContent = stopped;
+    if (footerCount) footerCount.textContent = `${total} ứng dụng được tìm thấy`;
+
+    // --- 2. RENDER BẢNG ---
     tbody.innerHTML = apps.map(app => {
         const isRunning = app.status === 'Running';
         
-        // Cập nhật màu nút bấm cho Dark Mode (giảm độ sáng nền, tăng contrast text)
-        const btnColor = isRunning 
-            ? 'bg-red-50 text-red-600 shadow-red-100 hover:bg-red-100 dark:bg-red-900/20 dark:text-red-400 dark:shadow-none dark:hover:bg-red-900/40' 
-            : 'bg-green-50 text-green-600 shadow-green-200 hover:bg-green-100 dark:bg-green-900/20 dark:text-green-400 dark:shadow-none dark:hover:bg-green-900/40';
-            
+        // Badge trạng thái (giữ nguyên cho đẹp)
+        const statusBadge = isRunning 
+            ? `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-green-100 text-green-700 dark:bg-green-500/20 dark:text-green-400 border border-green-200 dark:border-green-500/30">
+                 <span class="w-1.5 h-1.5 rounded-full bg-green-500 mr-1.5 animate-pulse"></span> Running
+               </span>`
+            : `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-400 border border-slate-200 dark:border-slate-600">
+                 <span class="w-1.5 h-1.5 rounded-full bg-slate-400 mr-1.5"></span> Stopped
+               </span>`;
+
+        // === KHÔI PHỤC LOGIC NÚT CŨ Ở ĐÂY ===
+        // Nút Running (Đỏ): bg-red-50 text-red-600 ...
+        // Nút Stopped (Xanh): bg-green-50 text-green-600 ...
+        const btnClass = isRunning 
+            ? 'bg-red-50 text-red-600 shadow-red-100 hover:bg-red-100 dark:bg-red-900/20 dark:text-red-400 dark:shadow-none dark:hover:bg-red-900/40 border border-red-100 dark:border-red-900/30' 
+            : 'bg-green-50 text-green-600 shadow-green-200 hover:bg-green-100 dark:bg-green-900/20 dark:text-green-400 dark:shadow-none dark:hover:bg-green-900/40 border border-green-100 dark:border-green-900/30';
+
         const btnIcon = isRunning ? 'fa-stop-circle' : 'fa-play-circle';
         const btnText = isRunning ? 'Đóng' : 'Mở';
         const btnAction = isRunning ? 'stop-app' : 'start-app';
-        
-        // Cập nhật màu Badge trạng thái cho Dark Mode
-        const statusBadgeClass = isRunning 
-            ? 'bg-green-100 text-green-700 border border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800' 
-            : 'bg-slate-100 text-slate-600 border border-slate-200 dark:bg-slate-700 dark:text-slate-400 dark:border-slate-600';
+
+        // Icon chữ cái
+        const firstLetter = (app.name || '?').charAt(0).toUpperCase();
+        const iconColor = isRunning ? 'bg-gradient-to-br from-blue-500 to-indigo-600' : 'bg-slate-200 dark:bg-slate-700';
+        const textColor = isRunning ? 'text-white' : 'text-slate-500 dark:text-slate-400';
 
         return `
-        <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
-            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+        <tr class="group hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-all duration-200">
+            
+            <td class="px-6 py-4 whitespace-nowrap">
                 <div class="flex items-center">
-                    <div class="w-8 h-8 rounded bg-slate-200 dark:bg-slate-700 flex items-center justify-center mr-3 text-slate-500 dark:text-slate-400"><i class="fas fa-cube"></i></div>
-                    ${app.name || 'Unknown'}
+                    <div class="w-10 h-10 rounded-xl ${iconColor} ${textColor} flex items-center justify-center font-bold text-lg shadow-sm mr-4 shrink-0 transition-transform group-hover:scale-110">
+                        ${firstLetter}
+                    </div>
+                    <div>
+                        <div class="text-sm font-bold text-slate-700 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                            ${app.name || 'Unknown Application'}
+                        </div>
+                        <div class="text-[10px] text-slate-400 dark:text-slate-500">Application</div>
+                    </div>
                 </div>
             </td>
-            <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-500 dark:text-slate-400 truncate max-w-xs" title="${app.path}">${app.path || 'N/A'}</td>
+
             <td class="px-6 py-4 whitespace-nowrap">
-                <span class="px-2 py-1 text-xs font-semibold rounded-full ${statusBadgeClass}">
-                    <i class="fas ${isRunning ? 'fa-check-circle' : 'fa-minus-circle'} mr-1"></i> ${app.status || 'Unknown'}
-                </span>
+                <div class="flex items-center max-w-xs md:max-w-sm xl:max-w-md group/path cursor-help">
+                    <i class="fas fa-folder text-slate-300 dark:text-slate-600 mr-2 group-hover/path:text-yellow-500 transition-colors"></i>
+                    <span class="text-xs font-mono text-slate-500 dark:text-slate-400 truncate" title="${app.path}">
+                        ${app.path || 'N/A'}
+                    </span>
+                </div>
             </td>
-            <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
-                <button data-action="${btnAction}" data-id="${app.name}" class="${btnColor} px-4 py-1.5 rounded-lg transition-colors shadow-md flex items-center mx-auto w-24 justify-center font-semibold">
-                    <i class="fas ${btnIcon} mr-2"></i> ${btnText}
+
+            <td class="px-6 py-4 whitespace-nowrap text-center">
+                ${statusBadge}
+            </td>
+
+            <td class="px-6 py-4 whitespace-nowrap text-right">
+                <button data-action="${btnAction}" data-id="${app.name}" class="${btnClass} px-4 py-1.5 rounded-lg transition-colors shadow-sm flex items-center justify-center gap-2 ml-auto w-24 font-semibold text-sm">
+                    <i class="fas ${btnIcon}"></i> ${btnText}
                 </button>
             </td>
         </tr>`;
@@ -96,38 +193,43 @@ export function renderProcessLayout() {
     return `
         <div class="space-y-6">
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 items-stretch">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-5 items-stretch h-40">
 
-                <div class="flip-card-container h-full" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-container h-full group" onclick="this.classList.toggle('flipped')">
                     <div class="flip-card-inner h-full">
                         <div class="flip-card-front h-full">
-                            <div class="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-xl border border-blue-100 dark:border-blue-800 shadow-sm dark:shadow-none h-full flex flex-col justify-between gap-4">
+                            <div class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-2xl border border-blue-100 dark:border-blue-800 shadow-sm h-full flex flex-col justify-between relative overflow-hidden">
+                                <div class="absolute -right-8 -top-8 w-24 h-24 bg-blue-500/10 rounded-full blur-2xl group-hover:bg-blue-500/20 transition-all"></div>
+                                
                                 <div>
-                                    <div class="flex justify-between items-start">
-                                        <p class="text-xs text-blue-500 dark:text-blue-400 font-bold uppercase tracking-wider">CPU Usage</p>
-                                        <i class="fas fa-microchip text-blue-200 dark:text-blue-500/50 text-lg"></i>
+                                    <div class="flex justify-between items-start z-10 relative">
+                                        <p class="text-sm font-extrabold text-blue-600 dark:text-blue-400 uppercase tracking-widest">CPU Usage</p>
+                                        <i class="fas fa-microchip text-blue-300 dark:text-blue-500/50 text-2xl"></i>
                                     </div>
-                                    <p id="total-cpu" class="text-xl font-mono font-bold text-slate-700 dark:text-slate-200 mt-1">0%</p>
-                                    <div class="w-full bg-blue-200 dark:bg-blue-900 h-1.5 rounded-full mt-2 overflow-hidden">
-                                        <div id="bar-cpu" class="bg-blue-500 dark:bg-blue-500 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+                                    <p id="total-cpu" class="text-2xl font-black text-slate-700 dark:text-white mt-2 z-10 relative">0%</p>
+                                    
+                                    <div class="w-full bg-slate-200 dark:bg-slate-700 h-2.5 rounded-full mt-4 overflow-hidden shadow-inner">
+                                        <div id="bar-cpu" class="bg-gradient-to-r from-blue-600 via-blue-400 to-cyan-400 h-full rounded-full transition-all duration-500 shadow-[0_0_10px_rgba(59,130,246,0.6)] relative" style="width: 0%">
+                                            <div class="absolute inset-0 bg-white/30 w-full h-full animate-[shimmer_2s_infinite]"></div>
+                                        </div>
                                     </div>
                                 </div>
-                                <p class="text-[10px] text-slate-400 dark:text-slate-500 font-medium">
-                                    <i class="fas fa-info-circle mr-1"></i>Nhấn xem chi tiết
+                                <p class="text-xs text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wide mt-auto">
+                                    <i class="fas fa-info-circle mr-1"></i>Chi tiết
                                 </p>
                             </div>
                         </div>
                         <div class="flip-card-back h-full">
-                            <div class="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-xl border border-blue-100 dark:border-blue-800 shadow-sm dark:shadow-none h-full flex flex-col justify-between gap-4">
+                            <div class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-2xl border border-blue-100 dark:border-blue-800 shadow-sm h-full flex flex-col justify-between">
                                 <div>
                                     <div class="flex justify-between items-start">
-                                        <p class="text-xs text-blue-500 dark:text-blue-400 font-bold uppercase tracking-wider">CPU Info</p>
-                                        <i class="fas fa-microchip text-blue-200 dark:text-blue-500/50 text-lg"></i>
+                                        <p class="text-sm font-extrabold text-blue-600 dark:text-blue-400 uppercase tracking-widest">CPU Info</p>
+                                        <i class="fas fa-microchip text-blue-300 dark:text-blue-500/50 text-2xl"></i>
                                     </div>
-                                    <p id="spec-cpu-name" class="font-semibold text-slate-800 dark:text-slate-200 text-xs mt-1 truncate" title="Loading...">Loading...</p>
+                                    <p id="spec-cpu-name" class="font-bold text-slate-800 dark:text-white text-sm mt-3 leading-snug truncate" title="Loading...">Loading...</p>
                                     <p id="spec-cpu-cores" class="text-xs text-slate-500 dark:text-slate-400 font-mono mt-1">-</p>
                                 </div>
-                                <p class="text-[10px] text-slate-400 dark:text-slate-500 font-medium">
+                                <p class="text-xs text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wide">
                                     <i class="fas fa-undo mr-1"></i>Quay lại
                                 </p>
                             </div>
@@ -135,39 +237,43 @@ export function renderProcessLayout() {
                     </div>
                 </div>
 
-                <div class="flip-card-container h-full" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-container h-full group" onclick="this.classList.toggle('flipped')">
                     <div class="flip-card-inner h-full">
                         <div class="flip-card-front h-full">
-                            <div class="bg-purple-50 dark:bg-purple-900/20 p-3 rounded-xl border border-purple-100 dark:border-purple-800 shadow-sm dark:shadow-none h-full flex flex-col justify-between gap-4">
+                            <div class="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-2xl border border-purple-100 dark:border-purple-800 shadow-sm h-full flex flex-col justify-between relative overflow-hidden">
+                                <div class="absolute -right-8 -top-8 w-24 h-24 bg-purple-500/10 rounded-full blur-2xl group-hover:bg-purple-500/20 transition-all"></div>
+
                                 <div>
-                                    <div class="flex justify-between items-start">
-                                        <p class="text-xs text-purple-500 dark:text-purple-400 font-bold uppercase tracking-wider">Memory</p>
-                                        <i class="fas fa-memory text-purple-200 dark:text-purple-500/50 text-lg"></i>
+                                    <div class="flex justify-between items-start z-10 relative">
+                                        <p class="text-sm font-extrabold text-purple-600 dark:text-purple-400 uppercase tracking-widest">Memory</p>
+                                        <i class="fas fa-memory text-purple-300 dark:text-purple-500/50 text-2xl"></i>
                                     </div>
-                                    <div class="flex items-baseline gap-2 mt-1">
-                                        <p id="total-mem" class="text-xl font-mono font-bold text-slate-700 dark:text-slate-200">0 MB</p>
-                                        <p id="spec-ram-total-1" class="text-sm font-semibold text-slate-400 dark:text-slate-500"></p>
+                                    <div class="flex items-baseline gap-2 mt-2 z-10 relative">
+                                        <p id="total-mem" class="text-2xl font-black text-slate-700 dark:text-white">0 MB</p>
                                     </div>
-                                    <div class="w-full bg-purple-200 dark:bg-purple-900 h-1.5 rounded-full mt-2 overflow-hidden">
-                                        <div id="bar-mem" class="bg-purple-500 dark:bg-purple-500 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+
+                                    <div class="w-full bg-slate-200 dark:bg-slate-700 h-2.5 rounded-full mt-4 overflow-hidden shadow-inner">
+                                        <div id="bar-mem" class="bg-gradient-to-r from-purple-600 via-fuchsia-500 to-pink-500 h-full rounded-full transition-all duration-500 shadow-[0_0_10px_rgba(168,85,247,0.6)] relative" style="width: 0%">
+                                             <div class="absolute inset-0 bg-white/30 w-full h-full animate-[shimmer_2s_infinite]"></div>
+                                        </div>
                                     </div>
                                 </div>
-                                <p class="text-[10px] text-slate-400 dark:text-slate-500 font-medium">
-                                    <i class="fas fa-server mr-1"></i>Nhấn xem chi tiết
+                                <p class="text-xs text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wide mt-auto">
+                                    <i class="fas fa-server mr-1"></i>Chi tiết
                                 </p>
                             </div>
                         </div>
                         <div class="flip-card-back h-full">
-                            <div class="bg-purple-50 dark:bg-purple-900/20 p-3 rounded-xl border border-purple-100 dark:border-purple-800 shadow-sm dark:shadow-none h-full flex flex-col justify-between gap-4">
+                            <div class="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-2xl border border-purple-100 dark:border-purple-800 shadow-sm h-full flex flex-col justify-between">
                                 <div>
                                     <div class="flex justify-between items-start">
-                                        <p class="text-xs text-purple-500 dark:text-purple-400 font-bold uppercase tracking-wider">Memory</p>
-                                        <i class="fas fa-memory text-purple-200 dark:text-purple-500/50 text-lg"></i>
+                                        <p class="text-sm font-extrabold text-purple-600 dark:text-purple-400 uppercase tracking-widest">Ram Specs</p>
+                                        <i class="fas fa-memory text-purple-300 dark:text-purple-500/50 text-2xl"></i>
                                     </div>
-                                    <p id="spec-ram-total-2" class="font-semibold text-slate-800 dark:text-slate-200 mt-1">Loading...</p>
-                                    <p id="spec-ram-detail" class="text-xs text-slate-500 dark:text-slate-400 font-mono mt-1">-</p>
+                                    <p id="spec-ram-total-2" class="font-bold text-slate-800 dark:text-white mt-3 text-sm">Loading...</p>
+                                    <p id="spec-ram-detail" class="text-xs text-slate-500 dark:text-slate-400 font-mono mt-1 truncate">-</p>
                                 </div>
-                                <p class="text-[10px] text-slate-400 dark:text-slate-500 font-medium">
+                                <p class="text-xs text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wide">
                                     <i class="fas fa-undo mr-1"></i>Quay lại
                                 </p>
                             </div>
@@ -175,81 +281,85 @@ export function renderProcessLayout() {
                     </div>
                 </div>
 
-                <div class="flip-card-container h-full" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-container h-full group" onclick="this.classList.toggle('flipped')">
                     <div class="flip-card-inner h-full">
                         <div class="flip-card-front h-full">
-                            <div class="bg-orange-50 dark:bg-orange-900/20 p-3 rounded-xl border border-orange-100 dark:border-orange-800 shadow-sm dark:shadow-none h-full flex flex-col justify-between gap-4">
+                            <div class="bg-orange-50 dark:bg-orange-900/20 p-4 rounded-2xl border border-orange-100 dark:border-orange-800 shadow-sm h-full flex flex-col justify-between relative overflow-hidden">
+                                <div class="absolute -right-8 -top-8 w-24 h-24 bg-orange-500/10 rounded-full blur-2xl group-hover:bg-orange-500/20 transition-all"></div>
+
                                 <div>
-                                    <div class="flex justify-between items-start">
-                                        <p class="text-xs text-orange-500 dark:text-orange-400 font-bold uppercase tracking-wider">Disk I/O</p>
-                                        <i class="fas fa-hdd text-orange-200 dark:text-orange-500/50 text-lg"></i>
+                                    <div class="flex justify-between items-start z-10 relative">
+                                        <p class="text-sm font-extrabold text-orange-600 dark:text-orange-400 uppercase tracking-widest">Disk I/O</p>
+                                        <i class="fas fa-hdd text-orange-300 dark:text-orange-500/50 text-2xl"></i>
                                     </div>
-                                    <p id="total-disk" class="text-xl font-mono font-bold text-slate-700 dark:text-slate-200 mt-1">0 KB/s</p>
-                                    <div class="w-full bg-orange-200 dark:bg-orange-900 h-1.5 rounded-full mt-2 overflow-hidden">
-                                        <div id="bar-disk" class="bg-orange-400 dark:bg-orange-500 h-full rounded-full w-0 transition-all duration-500 opacity-50"></div>
+                                    <p id="total-disk" class="text-2xl font-black text-slate-700 dark:text-white mt-2 z-10 relative">0 KB/s</p>
+                                    
+                                    <div class="w-full bg-slate-200 dark:bg-slate-700 h-2.5 rounded-full mt-4 overflow-hidden shadow-inner">
+                                        <div id="bar-disk" class="bg-gradient-to-r from-orange-500 via-amber-500 to-yellow-400 h-full rounded-full w-0 transition-all duration-500 shadow-[0_0_10px_rgba(249,115,22,0.6)] opacity-90 relative">
+                                             <div class="absolute inset-0 bg-white/30 w-full h-full animate-[shimmer_2s_infinite]"></div>
+                                        </div>
                                     </div>
                                 </div>
-                                <p class="text-[10px] text-slate-400 dark:text-slate-500 font-medium">
-                                    <i class="fas fa-exchange-alt mr-1"></i>Nhấn xem chi tiết
+                                <p class="text-xs text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wide mt-auto">
+                                    <i class="fas fa-exchange-alt mr-1"></i>Chi tiết
                                 </p>
                             </div>
                         </div>
                         <div class="flip-card-back h-full">
-                            <div class="bg-orange-50 dark:bg-orange-900/20 p-3 rounded-xl border border-orange-100 dark:border-orange-800 shadow-sm dark:shadow-none h-full flex flex-col justify-between gap-4">
+                            <div class="bg-orange-50 dark:bg-orange-900/20 p-4 rounded-2xl border border-orange-100 dark:border-orange-800 shadow-sm h-full flex flex-col justify-between">
                                 <div class="flex flex-col h-full overflow-hidden"> 
                                     <div class="flex justify-between items-start mb-2">
-                                        <p class="text-xs text-orange-500 dark:text-orange-400 font-bold uppercase tracking-wider">Disk I/O</p>
-                                        <i class="fas fa-hdd text-orange-200 dark:text-orange-500/50 text-lg"></i>
+                                        <p class="text-sm font-extrabold text-orange-600 dark:text-orange-400 uppercase tracking-widest">Disk Info</p>
+                                        <i class="fas fa-hdd text-orange-300 dark:text-orange-500/50 text-2xl"></i>
                                     </div>
-                                    <div id="spec-disk" class="whitespace-pre-line text-xs font-mono text-slate-600 dark:text-slate-300 overflow-y-auto pr-1 custom-scrollbar">Loading drives...</div>
+                                    <div id="spec-disk" class="whitespace-pre-line text-xs font-mono text-slate-600 dark:text-slate-300 overflow-y-auto pr-1 custom-scrollbar leading-relaxed">Loading...</div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="bg-slate-50 dark:bg-slate-800 p-3 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm dark:shadow-none h-full flex flex-col justify-between gap-4">
-                    <div class="flex justify-between items-start">
-                        <p class="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider">Processes</p>
-                        <i class="fas fa-tasks text-slate-300 dark:text-slate-600 text-lg"></i>
+                <div class="bg-slate-50 dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm h-full flex flex-col justify-between group">
+                     <div class="flex justify-between items-start">
+                        <p class="text-sm font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-widest">Processes</p>
+                        <i class="fas fa-tasks text-slate-300 dark:text-slate-600 text-2xl group-hover:text-slate-400 transition-colors"></i>
                     </div>
 
                     <div class="flex flex-col justify-center flex-grow">
-                        <p id="total-count" class="text-2xl font-mono font-bold text-slate-700 dark:text-slate-200">0</p>
+                        <p id="total-count" class="text-3xl font-black text-slate-700 dark:text-white">0</p>
                     </div>
 
-                    <p class="text-[10px] text-slate-400 dark:text-slate-500 font-medium">
+                    <p class="text-xs text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wide">
                         <i class="fas fa-list-ul mr-1"></i>Đang hoạt động
                     </p>
                 </div>
 
-                <div class="bg-slate-50 dark:bg-slate-800 p-3 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm dark:shadow-none h-full flex flex-col justify-between gap-4 hidden md:flex">
+                <div class="bg-slate-50 dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm h-full flex flex-col justify-between hidden md:flex group">
                     <div class="flex justify-between items-start">
-                        <p class="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider">System</p>
-                        <i class="fas fa-cogs text-slate-300 dark:text-slate-600 text-lg"></i>
+                        <p class="text-sm font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-widest">System</p>
+                        <i class="fas fa-cogs text-slate-300 dark:text-slate-600 text-2xl group-hover:text-slate-400 transition-colors"></i>
                     </div>
 
-                    <div class="flex flex-col justify-center gap-2 flex-grow">
-                        <div class="flex justify-between items-baseline border-b border-slate-100 dark:border-slate-700 pb-1">
-                            <span class="text-[10px] text-slate-400 dark:text-slate-500 font-medium">Threads</span>
+                    <div class="flex flex-col justify-center gap-3 flex-grow">
+                        <div class="flex justify-between items-baseline border-b border-slate-200 dark:border-slate-700 pb-2">
+                            <span class="text-xs text-slate-400 dark:text-slate-500 font-bold uppercase">Threads</span>
                             <span id="total-threads" class="font-mono font-bold text-slate-600 dark:text-slate-300 text-lg">0</span>
                         </div>
                         <div class="flex justify-between items-baseline">
-                            <span class="text-[10px] text-slate-400 dark:text-slate-500 font-medium">Handles</span>
+                            <span class="text-xs text-slate-400 dark:text-slate-500 font-bold uppercase">Handles</span>
                             <span id="total-handles" class="font-mono font-bold text-slate-600 dark:text-slate-300 text-lg">0</span>
                         </div>
                     </div>
-
                 </div>
 
             </div>
 
             <div class="flex flex-wrap items-center justify-between gap-4">
                 <div class="flex items-center space-x-3">
-                    <button id="list-processes-btn" class="btn-primary bg-blue-600 text-white px-4 py-2 rounded-lg shadow-md shadow-blue-200 dark:shadow-none hover:bg-blue-700 transition-all">
+                    <button id="list-processes-btn" class="btn-primary bg-blue-600 text-white px-4 py-2 rounded-xl shadow-lg shadow-blue-500/30 hover:bg-blue-700 transition-all font-bold text-xs flex items-center">
                         <i class="fas fa-sync-alt mr-2"></i> Cập Nhật
                     </button>
-                    <button id="start-process-btn" class="btn-primary bg-green-600 text-white px-4 py-2 rounded-lg shadow-md shadow-green-200 dark:shadow-none hover:bg-green-700 transition-all">
+                    <button id="start-process-btn" class="btn-primary bg-emerald-600 text-white px-4 py-2 rounded-xl shadow-lg shadow-emerald-500/30 hover:bg-emerald-700 transition-all font-bold text-xs flex items-center">
                         <i class="fas fa-plus mr-2"></i> Mở Process
                     </button>
                     <div class="uiv-search-box ml-4">
@@ -261,26 +371,36 @@ export function renderProcessLayout() {
                             id="process-search" 
                             type="text" 
                             placeholder="Tìm PID hoặc Tên" 
-                            class="uiv-search-input uiv-anim-width dark:bg-slate-700 dark:text-white dark:placeholder-slate-400 dark:border-slate-600"
+                            class="uiv-search-input uiv-anim-width dark:bg-slate-900 dark:text-white dark:placeholder-slate-500 dark:border-slate-600"
                         >
                     </div>
-                    <input id="process-start-path" type="hidden"> </div>
+                </div>
             </div>
 
-            <div class="table-container bg-gray-50 dark:bg-slate-800 rounded-lg shadow-inner dark:shadow-none dark:border dark:border-slate-700">
-                <table class="min-w-full divide-y divide-gray-100 dark:divide-slate-700">
-                    <thead class="bg-gray-200 dark:bg-slate-700 sticky top-0 select-none z-10 shadow-sm">
+            <div class="table-container bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-y-auto custom-scrollbar">
+                <table class="min-w-full divide-y divide-slate-100 dark:divide-slate-700">
+                    <thead class="bg-slate-50/90 dark:bg-slate-700/90 sticky top-0 select-none z-10 backdrop-blur-md">
                         <tr>
-                            <th class="px-6 py-3 cursor-pointer text-gray-700 dark:text-slate-300" onclick="window.handleSortProcess('pid')"><div class="flex items-center">PID ${getSortIcon('pid', state.currentSort)}</div></th>
-                            <th class="px-6 py-3 cursor-pointer text-gray-700 dark:text-slate-300" onclick="window.handleSortProcess('name')"><div class="flex items-center">Tên ${getSortIcon('name', state.currentSort)}</div></th>
-                            <th class="px-6 py-3 cursor-pointer text-gray-700 dark:text-slate-300" onclick="window.handleSortProcess('cpu')"><div class="flex items-center">CPU ${getSortIcon('cpu', state.currentSort)}</div></th>
-                            <th class="px-6 py-3 cursor-pointer text-gray-700 dark:text-slate-300" onclick="window.handleSortProcess('mem')"><div class="flex items-center">RAM ${getSortIcon('mem', state.currentSort)}</div></th>
-                            <th class="px-6 py-3 cursor-pointer text-gray-700 dark:text-slate-300" onclick="window.handleSortProcess('disk')"><div class="flex items-center">DISK ${getSortIcon('disk', state.currentSort)}</div></th>
-                            <th class="px-6 py-3 text-center text-gray-700 dark:text-slate-300">Thao Tác</th>
+                            <th class="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-300 uppercase tracking-wider cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors" onclick="window.handleSortProcess('pid')">
+                                <div class="flex items-center gap-2">PID ${getSortIcon('pid', state.currentSort)}</div>
+                            </th>
+                            <th class="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-300 uppercase tracking-wider cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors" onclick="window.handleSortProcess('name')">
+                                <div class="flex items-center gap-2">Tên Process ${getSortIcon('name', state.currentSort)}</div>
+                            </th>
+                            <th class="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-300 uppercase tracking-wider cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors" onclick="window.handleSortProcess('cpu')">
+                                <div class="flex items-center gap-2">CPU ${getSortIcon('cpu', state.currentSort)}</div>
+                            </th>
+                            <th class="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-300 uppercase tracking-wider cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors" onclick="window.handleSortProcess('mem')">
+                                <div class="flex items-center gap-2">RAM ${getSortIcon('mem', state.currentSort)}</div>
+                            </th>
+                            <th class="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-300 uppercase tracking-wider cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors" onclick="window.handleSortProcess('disk')">
+                                <div class="flex items-center gap-2">DISK ${getSortIcon('disk', state.currentSort)}</div>
+                            </th>
+                            <th class="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-300 uppercase tracking-wider text-center">Hành Động</th>
                         </tr>
                     </thead>
-                    <tbody id="process-list-body" class="bg-white dark:bg-slate-800 divide-y divide-slate-50 dark:divide-slate-700 text-sm">
-                         <tr><td colspan="6" class="px-6 py-8 text-center text-gray-500 dark:text-slate-400 italic">Đang tải dữ liệu...</td></tr>
+                    <tbody id="process-list-body" class="bg-white dark:bg-slate-800 divide-y divide-slate-50 dark:divide-slate-700/50">
+                         <tr><td colspan="6" class="px-6 py-12 text-center text-slate-400 italic">Đang tải dữ liệu...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -373,19 +493,97 @@ export function updateProcessTable(processes) {
 }
 
 // --- OTHER VIEWS ---
+
 export function renderScreenshotView() {
     return `
-        <div class="space-y-6 text-center h-full p-5">
-            <button id="capture-screenshot-btn" class="btn-primary bg-blue-600 text-white px-6 py-3 rounded-lg shadow-md shadow-blue-200 dark:shadow-none hover:bg-blue-700 transition-all font-semibold">
-                <i class="fas fa-camera mr-2"></i> Chụp Màn Hình
-            </button>
-            <button id="save-screenshot-btn" class="hidden btn-primary bg-green-600 text-white px-6 py-3 rounded-lg shadow hover:bg-green-700 transition-all font-semibold">
-                <i class="fas fa-download mr-2"></i> Lưu Ảnh
-            </button>
-            <div id="screenshot-area" class="bg-gray-100 dark:bg-slate-800 border-2 border-dashed border-gray-300 dark:border-slate-600 rounded-lg p-6 flex flex-col items-center justify-center min-h-[300px]">
-                <p id="screenshot-placeholder" class="text-gray-500 dark:text-slate-400 mb-4 h-full">Chưa có ảnh</p>
-                <img id="screenshot-image" src="" alt="Screenshot" class="hidden max-w-full shadow-lg border border-gray-200 dark:border-slate-700 rounded-lg">
+        <div class="h-full flex flex-col gap-6 animate-fade-in-up relative">
+            
+            <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 flex flex-col md:flex-row justify-between items-center gap-4 shrink-0 transition-colors">
+                <div class="flex items-center gap-4 w-full md:w-auto">
+                    <div class="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-xl shadow-sm border border-indigo-100 dark:border-indigo-800">
+                        <i class="fas fa-camera"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-slate-800 dark:text-white text-base">Chụp Màn Hình</h3>
+                        <div class="flex items-center gap-2 mt-0.5">
+                            <span class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
+                            <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">Ready to capture</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-3 w-full md:w-auto">
+                    <button id="capture-screenshot-btn" class="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-sm shadow-lg shadow-blue-200 dark:shadow-none transition-all hover:-translate-y-0.5 active:scale-95 group">
+                        <i class="fas fa-aperture group-hover:rotate-180 transition-transform duration-500"></i>
+                        <span>Chụp Ngay</span>
+                    </button>
+                    
+                    <button id="save-screenshot-btn" class="hidden flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-sm shadow-lg shadow-emerald-200 dark:shadow-none transition-all hover:-translate-y-0.5 active:scale-95 animate-fade-in">
+                        <i class="fas fa-save"></i>
+                        <span>Lưu Ảnh</span>
+                    </button>
+                </div>
             </div>
+
+            <div id="screenshot-area" class="flex-1 bg-slate-100 dark:bg-slate-900/50 rounded-2xl border-2 border-dashed border-slate-300 dark:border-slate-700 relative overflow-hidden flex items-center justify-center group transition-colors p-4">
+                
+                <div id="screenshot-placeholder" class="text-center p-8 transition-all duration-300 group-hover:scale-105">
+                    <div class="w-24 h-24 bg-white dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-5 shadow-sm border border-slate-200 dark:border-slate-700">
+                        <i class="fas fa-image text-4xl text-slate-300 dark:text-slate-600"></i>
+                    </div>
+                    <h4 class="text-lg font-bold text-slate-600 dark:text-slate-300 mb-2">Chưa có dữ liệu hình ảnh</h4>
+                    <p class="text-sm text-slate-400 dark:text-slate-500 max-w-xs mx-auto leading-relaxed">
+                        Nhấn nút <span class="font-bold text-blue-500">"Chụp Ngay"</span> phía trên để yêu cầu Agent gửi về hình ảnh màn hình hiện tại.
+                    </p>
+                </div>
+
+                <div id="screenshot-loader" class="hidden absolute inset-0 bg-white/60 dark:bg-slate-900/80 backdrop-blur-sm z-10 flex flex-col items-center justify-center transition-all">
+                    <div class="w-12 h-12 border-4 border-slate-200 dark:border-slate-700 border-t-blue-600 rounded-full animate-spin mb-4 shadow-lg"></div>
+                    <p class="text-sm font-bold text-slate-600 dark:text-slate-300 animate-pulse">Đang xử lý ảnh...</p>
+                </div>
+
+                <img id="screenshot-image" src="" alt="Screenshot" class="hidden max-w-full max-h-full object-contain shadow-2xl rounded-lg border border-slate-200 dark:border-slate-600 transition-opacity duration-500">
+                
+                <div id="screenshot-info" class="hidden absolute bottom-6 left-1/2 -translate-x-1/2 bg-slate-900/80 backdrop-blur-md text-white text-xs px-4 py-2 rounded-full font-mono shadow-lg border border-white/10">
+                    Captured at: <span id="screenshot-time" class="font-bold text-blue-400">--:--:--</span>
+                </div>
+            </div>
+
+            <div id="save-confirm-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 transition-all duration-300">
+                <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-sm border border-slate-200 dark:border-slate-700 transform scale-100 transition-all">
+                    
+                    <div class="p-5">
+                        <h3 class="text-lg font-bold text-slate-800 dark:text-white mb-4">Lưu Ảnh Chụp</h3>
+                        
+                        <div class="flex gap-4 mb-5 bg-slate-50 dark:bg-slate-700/50 p-3 rounded-xl border border-slate-100 dark:border-slate-600">
+                            <img id="modal-thumb-img" src="" class="w-16 h-16 object-cover rounded-lg border border-slate-200 dark:border-slate-500 bg-black">
+                            <div class="flex flex-col justify-center">
+                                <span class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Kích thước ảnh</span>
+                                <span id="modal-img-dims" class="text-sm font-mono font-bold text-slate-700 dark:text-slate-200">1920 x 1080 px</span>
+                                <span id="modal-img-size" class="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">...</span>
+                            </div>
+                        </div>
+
+                        <div class="mb-2">
+                            <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5 ml-1">Đặt tên file:</label>
+                            <div class="relative">
+                                <input type="text" id="modal-filename-input" class="w-full pl-4 pr-10 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none dark:text-white font-medium" placeholder="screenshot_abc...">
+                                <span class="absolute right-3 top-2.5 text-slate-400 text-xs font-bold pointer-events-none">.PNG</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="p-4 border-t border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 rounded-b-2xl flex gap-3">
+                        <button id="modal-cancel-btn" class="flex-1 py-2.5 rounded-xl bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-sm hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors">
+                            Hủy
+                        </button>
+                        <button id="modal-download-btn" class="flex-1 py-2.5 rounded-xl bg-blue-600 text-white font-bold text-sm hover:bg-blue-700 shadow-lg shadow-blue-200 dark:shadow-none transition-all active:scale-95 flex items-center justify-center gap-2">
+                            <i class="fas fa-download"></i> Tải Về
+                        </button>
+                    </div>
+                </div>
+            </div>
+
         </div>
     `;
 }
@@ -446,129 +644,115 @@ export function renderKeyloggerDisplay() {
 
 export function renderWebcamControl() {
     return `
-        <div class="space-y-4 h-full flex flex-col items-center relative">
+        <div class="h-full flex flex-col gap-6 animate-fade-in-up relative">
             
-            <div id="save-video-modal" class="absolute inset-0 z-50 flex items-center justify-center bg-slate-900/90 backdrop-blur-sm hidden">
-                <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-2xl w-[600px] border border-slate-200 dark:border-slate-700 transform scale-100 transition-all">
-                    <div class="flex justify-between items-center mb-3">
-                        <h3 class="text-lg font-bold text-slate-800 dark:text-white flex items-center">
-                            <i class="fas fa-film text-blue-600 mr-2"></i> Xem lại bản ghi
-                        </h3>
-                        <div class="text-xs font-mono text-slate-500 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded" id="video-size-info">0 MB</div>
+            <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 flex flex-col md:flex-row justify-between items-center gap-4 shrink-0 transition-colors">
+                
+                <div class="flex items-center gap-4 w-full md:w-auto">
+                    <div class="w-12 h-12 rounded-2xl bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 flex items-center justify-center text-xl shadow-sm border border-rose-100 dark:border-rose-800">
+                        <i class="fas fa-video"></i>
                     </div>
-
-                    <div class="bg-black rounded-lg overflow-hidden mb-4 border border-slate-300 dark:border-slate-600 aspect-video relative shadow-inner">
-                        <video id="playback-video" controls autoplay class="w-full h-full object-contain"></video>
-                    </div>
-                    
-                    <div class="mb-4">
-                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">Đặt tên file</label>
-                        <div class="flex items-center border border-slate-300 dark:border-slate-600 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-blue-500 transition-all">
-                            <input type="text" id="video-filename" class="w-full p-2.5 outline-none font-mono text-sm text-slate-700 dark:text-white dark:bg-slate-700" placeholder="record_video...">
-                            <span class="bg-slate-100 dark:bg-slate-600 text-slate-500 dark:text-slate-300 px-3 py-2.5 text-sm font-medium border-l border-slate-300 dark:border-slate-500">.webm</span>
+                    <div>
+                        <h3 class="font-bold text-slate-800 dark:text-white text-base">Webcam Live</h3>
+                        <div class="flex items-center gap-2 mt-0.5">
+                            <span id="cam-status-dot" class="w-1.5 h-1.5 rounded-full bg-slate-300 dark:bg-slate-600"></span>
+                            <p id="cam-status-text" class="text-xs text-slate-500 dark:text-slate-400 font-medium">Camera Offline</p>
                         </div>
                     </div>
+                </div>
+
+                <div class="flex items-center gap-2 w-full md:w-auto overflow-x-auto pb-2 md:pb-0">
                     
-                    <div class="grid grid-cols-2 gap-3">
-                        <button id="cancel-save-video" class="px-4 py-2.5 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-600 hover:text-slate-800 rounded-xl font-bold text-sm transition-colors flex justify-center items-center">
-                            <i class="fas fa-times mr-2"></i> Đóng & Xóa
+                    <div class="flex bg-slate-100 dark:bg-slate-700/50 rounded-xl p-1 border border-slate-200 dark:border-slate-600">
+                        <button id="webcam-on-btn" class="px-4 py-2 rounded-lg text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-600 hover:text-green-600 dark:hover:text-green-400 hover:shadow-sm transition-all flex items-center gap-2">
+                            <i class="fas fa-power-off"></i> Bật
                         </button>
-                        
-                        <button id="confirm-save-video" class="px-4 py-2.5 bg-blue-600 text-white hover:bg-blue-700 rounded-xl font-bold text-sm shadow-lg shadow-blue-200 dark:shadow-none transition-all flex justify-center items-center active:scale-95">
-                            <i class="fas fa-download mr-2"></i> Tải Xuống
+                        <div class="w-px bg-slate-200 dark:bg-slate-600 my-1"></div>
+                        <button id="webcam-off-btn" class="px-4 py-2 rounded-lg text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-600 hover:text-red-500 dark:hover:text-red-400 hover:shadow-sm transition-all flex items-center gap-2">
+                            <i class="fas fa-stop"></i> Tắt
                         </button>
                     </div>
-                </div>
-            </div>
 
-            <div class="w-full max-w-5xl flex justify-between items-center bg-white dark:bg-slate-800 p-3 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700">
-                <div class="flex items-center gap-2">
-                    <span class="text-red-500 animate-pulse"><i class="fas fa-circle text-[10px]"></i></span>
-                    <span class="font-bold text-gray-700 dark:text-slate-200">WEBCAM STREAM</span>
-                </div>
-                
-                <div class="flex items-center space-x-2">
-                    <div id="recording-ui" class="hidden flex items-center mr-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 px-3 py-1.5 rounded-lg border border-red-100 dark:border-red-900">
-                        <span class="w-2 h-2 bg-red-600 rounded-full animate-ping mr-2"></span>
-                        <span id="record-timer" class="font-mono font-bold text-sm">00:00</span>
-                    </div>
+                    <div class="w-px h-8 bg-slate-200 dark:bg-slate-700 mx-2"></div>
 
-                    <button id="record-btn" class="text-slate-600 dark:text-slate-200 bg-slate-100 dark:bg-slate-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors border border-slate-200 dark:border-slate-600 flex items-center">
-                        <i class="fas fa-record-vinyl mr-2 text-red-500"></i> Ghi hình
-                    </button>
-
-                    <div class="h-6 w-px bg-gray-300 dark:bg-slate-600 mx-2"></div>
-
-                    <button id="webcam-on-btn" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center shadow-md shadow-green-200 dark:shadow-none">
-                        <i class="fas fa-power-off mr-2"></i> Bật
-                    </button>
-                    <button id="webcam-off-btn" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center shadow-md shadow-red-200 dark:shadow-none">
-                        <i class="fas fa-stop mr-2"></i> Tắt
-                    </button>
-                    
-                    <button id="toggle-stats-btn" class="text-slate-600 dark:text-slate-200 bg-slate-100 dark:bg-slate-700 px-3 py-2 rounded-lg text-sm font-medium hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors border border-slate-200 dark:border-slate-600" title="Stats">
+                    <button id="toggle-stats-btn" class="w-10 h-10 flex items-center justify-center rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 text-slate-500 hover:text-blue-600 hover:border-blue-200 dark:hover:border-blue-800 transition-all shadow-sm" title="Thông số kỹ thuật">
                         <i class="fas fa-chart-bar"></i>
                     </button>
+
+                    <button id="record-btn" class="flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-slate-800 border-2 border-red-100 dark:border-red-900/30 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl font-bold text-sm transition-all shadow-sm group">
+                        <div class="w-2.5 h-2.5 rounded-full bg-red-500 group-hover:scale-110 transition-transform"></div>
+                        <span id="record-btn-text">Ghi hình</span>
+                    </button>
                 </div>
             </div>
-            
-            <div id="webcam-area" class="w-full max-w-5xl aspect-video bg-black rounded-xl border-4 border-gray-800 dark:border-slate-700 relative flex items-center justify-center overflow-hidden shadow-2xl">
+
+            <div id="webcam-area" class="flex-1 bg-black rounded-2xl border-4 border-slate-800 dark:border-slate-700 relative overflow-hidden flex items-center justify-center shadow-2xl group">
+                
                 <canvas id="hidden-recorder-canvas" style="display:none;"></canvas>
 
-                <div id="webcam-stats-overlay" class="absolute top-4 right-4 bg-black/60 backdrop-blur-sm p-3 rounded-lg pointer-events-none border border-white/10 shadow-lg z-10" style="display: none;"></div>
+                <div id="recording-ui" class="hidden absolute top-4 left-4 z-20 flex items-center gap-2 bg-red-600/90 backdrop-blur-sm text-white px-3 py-1.5 rounded-lg shadow-lg border border-red-500/50 animate-pulse">
+                    <div class="w-2 h-2 bg-white rounded-full"></div>
+                    <span class="text-xs font-bold font-mono tracking-widest">REC</span>
+                    <span id="record-timer" class="text-xs font-mono border-l border-white/20 pl-2 ml-1">00:00</span>
+                </div>
+
+                <div id="webcam-stats-overlay" class="absolute top-4 right-4 z-20 bg-black/60 backdrop-blur-md p-3 rounded-xl border border-white/10 shadow-lg text-xs font-mono text-slate-300 hidden select-none pointer-events-none">
+                    </div>
                 
-                <div id="webcam-placeholder" class="text-gray-500 dark:text-slate-500 flex flex-col items-center z-0">
-                    <div class="box-of-star1">
-                        <div class="star star-position1"></div>
-                        <div class="star star-position2"></div>
-                        <div class="star star-position3"></div>
-                        <div class="star star-position4"></div>
-                        <div class="star star-position5"></div>
-                        <div class="star star-position6"></div>
-                        <div class="star star-position7"></div>
-                    </div>
-                    <div class="box-of-star2">
-                        <div class="star star-position1"></div>
-                        <div class="star star-position2"></div>
-                        <div class="star star-position3"></div>
-                        <div class="star star-position4"></div>
-                        <div class="star star-position5"></div>
-                        <div class="star star-position6"></div>
-                        <div class="star star-position7"></div>
-                    </div>
-                    <div class="box-of-star3">
-                        <div class="star star-position1"></div>
-                        <div class="star star-position2"></div>
-                        <div class="star star-position3"></div>
-                        <div class="star star-position4"></div>
-                        <div class="star star-position5"></div>
-                        <div class="star star-position6"></div>
-                        <div class="star star-position7"></div>
-                    </div>
-                    <div class="box-of-star4">
-                        <div class="star star-position1"></div>
-                        <div class="star star-position2"></div>
-                        <div class="star star-position3"></div>
-                        <div class="star star-position4"></div>
-                        <div class="star star-position5"></div>
-                        <div class="star star-position6"></div>
-                        <div class="star star-position7"></div>
-                    </div>
+                <div id="webcam-placeholder" class="text-gray-500 dark:text-slate-500 flex flex-col items-center z-0 w-full h-full relative">
+                    <div class="box-of-star1"><div class="star star-position1"></div><div class="star star-position2"></div><div class="star star-position3"></div><div class="star star-position4"></div><div class="star star-position5"></div><div class="star star-position6"></div><div class="star star-position7"></div></div>
+                    <div class="box-of-star2"><div class="star star-position1"></div><div class="star star-position2"></div><div class="star star-position3"></div><div class="star star-position4"></div><div class="star star-position5"></div><div class="star star-position6"></div><div class="star star-position7"></div></div>
+                    <div class="box-of-star3"><div class="star star-position1"></div><div class="star star-position2"></div><div class="star star-position3"></div><div class="star star-position4"></div><div class="star star-position5"></div><div class="star star-position6"></div><div class="star star-position7"></div></div>
+                    <div class="box-of-star4"><div class="star star-position1"></div><div class="star star-position2"></div><div class="star star-position3"></div><div class="star star-position4"></div><div class="star star-position5"></div><div class="star star-position6"></div><div class="star star-position7"></div></div>
                     <div data-js="astro" class="astronaut">
-                        <div class="head"></div>
-                        <div class="arm arm-left"></div>
-                        <div class="arm arm-right"></div>
-                        <div class="body">
-                        <div class="panel"></div>
-                        </div>
-                        <div class="leg leg-left"></div>
-                        <div class="leg leg-right"></div>
-                        <div class="schoolbag"></div>
+                        <div class="head"></div><div class="arm arm-left"></div><div class="arm arm-right"></div><div class="body"><div class="panel"></div></div><div class="leg leg-left"></div><div class="leg leg-right"></div><div class="schoolbag"></div>
+                    </div>
+                    
+                    <div id="webcam-status-msg" class="absolute bottom-10 left-0 right-0 text-center z-30">
+                        <p class="text-slate-400 text-sm font-medium bg-slate-900/50 inline-block px-4 py-2 rounded-full backdrop-blur-sm border border-slate-700">
+                            Waiting for connection...
+                        </p>
                     </div>
                 </div>
                 
-                <img id="webcam-stream" src="" alt="Video Webcam Agent" class="w-full h-full object-contain absolute inset-0 z-1" style="display:none" />
+                <img id="webcam-stream" src="" alt="Live Stream" class="w-full h-full object-contain absolute inset-0 z-10 hidden" />
             </div>
+
+            <div id="save-video-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-sm p-4 transition-all duration-300">
+                <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-lg border border-slate-200 dark:border-slate-700 transform scale-100 transition-all overflow-hidden flex flex-col">
+                    
+                    <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/50">
+                        <h3 class="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                            <i class="fas fa-film text-rose-500"></i> Xem lại bản ghi
+                        </h3>
+                        <span id="video-size-info" class="text-xs font-mono bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-2 py-1 rounded-md">0 MB</span>
+                    </div>
+
+                    <div class="aspect-video bg-black relative group">
+                        <video id="playback-video" controls class="w-full h-full object-contain"></video>
+                    </div>
+                    
+                    <div class="p-6 space-y-4">
+                        <div class="space-y-2">
+                            <label class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Đặt tên file</label>
+                            <div class="relative">
+                                <input type="text" id="video-filename" class="w-full pl-4 pr-12 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-xl text-sm focus:ring-2 focus:ring-rose-500 outline-none dark:text-white font-medium transition-all" placeholder="video_recording...">
+                                <span class="absolute right-4 top-3 text-slate-400 text-xs font-bold pointer-events-none">.WEBM</span>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3 pt-2">
+                            <button id="cancel-save-video" class="py-3 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors flex justify-center items-center gap-2">
+                                <i class="fas fa-trash-alt"></i> Hủy & Xóa
+                            </button>
+                            <button id="confirm-save-video" class="py-3 rounded-xl bg-rose-600 text-white font-bold text-sm hover:bg-rose-700 shadow-lg shadow-rose-200 dark:shadow-none transition-all active:scale-95 flex justify-center items-center gap-2">
+                                <i class="fas fa-download"></i> Tải Xuống
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
     `;
 }
@@ -877,7 +1061,7 @@ function renderProjectOverview() {
                 <i class="fas fa-network-wired text-4xl"></i>
             </div>
             
-            <h1 class="text-5xl font-extrabold text-slate-800 dark:text-white mb-4 tracking-tight">
+            <h1 class="text-2xl font-extrabold text-slate-800 dark:text-white mb-4 tracking-tight">
                 Remote Control System <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-500">Pro</span>
             </h1>
             
