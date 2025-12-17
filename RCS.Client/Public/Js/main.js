@@ -1405,11 +1405,6 @@ window.refreshAgentList = () => {
         btn.innerHTML = '<i class="fas fa-sync-alt fa-spin"></i> Syncing...';
     }
 
-    // 2. Logic cập nhật
-    // Vì SignalR tự động đẩy list mới khi có thay đổi, nút này chủ yếu mang tính trấn an.
-    // Tuy nhiên, ta có thể gửi một lệnh "Ping" hoặc yêu cầu Server gửi lại list nếu Server hỗ trợ.
-    // Nếu Server chưa có lệnh "GetAgents", ta chỉ cần giả lập delay.
-    
     setTimeout(() => {
         // Kết thúc hiệu ứng
         if(icon) icon.classList.remove('fa-spin');
