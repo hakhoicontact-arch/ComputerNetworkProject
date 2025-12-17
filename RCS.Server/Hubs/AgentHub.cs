@@ -60,6 +60,17 @@ namespace RCS.Server.Hubs
             await _clientHubContext.Clients.All.SendAsync("ReceiveBinaryChunk", base64Data);
         }
 
+        public async Task SendChatReply(string message)
+        {
+            // Tạo timestamp tại Server để đồng bộ
+            string timestamp = DateTime.Now.ToString("HH:mm:ss");
+            
+            // Chuyển tiếp tin nhắn về Web Client
+            // Tên hàm "ReceiveChatMessage" phải khớp với bên JS (network.js/main.js)
+            await _clientHubContext.Clients.All.SendAsync("ReceiveChatMessage", "Agent", message, timestamp);
+
+            Console.WriteLine($"[AgentHub] Chat Reply Sent: {message} at {timestamp}");
+        }
         #endregion
     }
 }

@@ -1,3 +1,5 @@
+import { state } from './config.js';
+
 // --- UI HELPERS ---
 
 export function updateStatus(msg, type) {
@@ -265,4 +267,42 @@ export function renderDiskInfo(rawString) {
         res += driveName + " " + pad3(freeGB) + "GB/" + pad3(totalGB) + "GB. " + " - " + usedPercent + "%\n";
     }
     return res;
+}
+
+
+export function handleChatMessage(sender, message, time) {
+    console.log("Nhận tin nhắn:", sender, message);
+    // Chỉ hiển thị nếu đang ở view automation (hoặc hiển thị thông báo popup nếu ở view khác)
+    if (state.currentView === 'automation') {
+        appendMessageToUI(sender, message, time, 'received');
+    } else {
+        // Tùy chọn: Hiện Toast thông báo có tin nhắn mới
+        updateStatus(`Tin nhắn mới từ ${sender}`, 'success');
+    }
+}
+
+export function appendMessageToUI(sender, message, time, type) {
+    const chatBox = document.getElementById('chat-messages');
+    if (!chatBox) return;
+
+    const isMe = type === 'sent';
+    
+    // HTML cho tin nhắn (Bong bóng chat)
+    const bubbleHtml = `
+        <div class="flex ${isMe ? 'justify-end' : 'justify-start'} animate-fade-in-up">
+            <div class="max-w-[70%] ${isMe ? 'bg-blue-600 text-white rounded-br-none' : 'bg-white border border-slate-200 text-slate-700 rounded-bl-none'} p-3 rounded-2xl shadow-sm relative group">
+                <p class="text-sm leading-relaxed">${message}</p>
+                <div class="text-[10px] ${isMe ? 'text-blue-200' : 'text-slate-400'} mt-1 text-right flex justify-end items-center gap-1">
+                    ${!isMe ? `<span class="font-bold mr-1">${sender}</span>` : ''} 
+                    ${time}
+                    ${isMe ? '<i class="fas fa-check-double"></i>' : ''}
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Chèn vào cuối
+    chatBox.insertAdjacentHTML('beforeend', bubbleHtml);
+    // Cuộn xuống đáy
+    chatBox.scrollTop = chatBox.scrollHeight;
 }

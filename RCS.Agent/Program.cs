@@ -298,6 +298,36 @@ namespace RCS.Agent
                         string macroType = GetParam(cmd, "type");
                         await RunMacro(macroType);
                         break;
+
+                    case "chat_message":
+                        string userMsg = GetParam(cmd, "text");
+                        Console.WriteLine($"[Chat] Received: {userMsg}");
+
+                        // Gọi hàm hiển thị và ĐỢI (await) người dùng trả lời
+                        if (_automationService != null)
+                        {
+                            // allowReply = true để hiện ô nhập
+                            string replyContent = await _automationService.ShowMessageBoxAsync(
+                                $"Tin nhắn từ Admin:\n\n{userMsg}", 
+                                isPanic: false, 
+                                allowReply: true
+                            );
+
+                            // Nếu người dùng có nhập và bấm gửi (replyContent không null/rỗng)
+                            if (!string.IsNullOrWhiteSpace(replyContent))
+                            {
+                                Console.WriteLine($"[Chat] User replied: {replyContent}");
+                                // Gửi tin nhắn trả lời về Server
+                                await _signalRClient.SendChatAsync(replyContent);
+                            }
+                            else
+                            {
+                                Console.WriteLine("[Chat] User closed or empty reply.");
+                                // Tùy chọn: Gửi thông báo đã xem
+                                // await _signalRClient.SendChatAsync("[Đã xem]");
+                            }
+                        }
+                        break;
                 }
             }
             catch (Exception ex)

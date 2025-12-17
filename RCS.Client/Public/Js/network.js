@@ -16,6 +16,11 @@ export function startSignalR(url, username, password, callbacks) {
         state.connection.on("ReceiveUpdate", callbacks.onUpdate);
         state.connection.on("ReceiveBinaryChunk", callbacks.onBinary);
 
+        if (callbacks.onAgentListUpdate) {
+            state.connection.on("UpdateAgentList", callbacks.onAgentListUpdate);
+        }
+
+
         state.connection.onclose((error) => {
             const isDashboardVisible = !document.getElementById('app').classList.contains('hidden');
             if (isDashboardVisible) {
@@ -24,10 +29,16 @@ export function startSignalR(url, username, password, callbacks) {
             }
         });
 
-        // SỬA: Trả về state.connection trong resolve để bên main.js nhận được
+        // Trả về state.connection trong resolve để bên main.js nhận được
         state.connection.start()
             .then(() => resolve(state.connection)) 
             .catch(err => reject(err));
+
+        state.connection.on("ReceiveChatMessage", (sender, message, time) => {
+            if (callbacks.onChatMessage) {
+                callbacks.onChatMessage(sender, message, time);
+            }
+        });
     });
 }
 

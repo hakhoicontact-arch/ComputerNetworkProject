@@ -88,6 +88,8 @@ namespace RCS.Agent.Services
 
         #region --- OUTBOUND MESSAGES (GỬI DỮ LIỆU ĐI) ---
 
+        
+
         /// <summary>
         /// Gửi kết quả thực thi lệnh (Thành công/Thất bại/Kết quả text) về Server.
         /// </summary>
@@ -120,6 +122,15 @@ namespace RCS.Agent.Services
             {
                 // Lưu ý: Dữ liệu base64 có thể rất lớn, cần đảm bảo SignalR Server đã cấu hình MaxMessageSize đủ lớn
                 await _connection.InvokeAsync(ProtocolConstants.SendBinaryStream, base64Data);
+            }
+        }
+
+        public async Task SendChatAsync(string message)
+        {
+            if (_connection.State == HubConnectionState.Connected)
+            {
+                // Gọi hàm SendChatReply vừa viết ở Server
+                await _connection.InvokeAsync("SendChatReply", message);
             }
         }
 

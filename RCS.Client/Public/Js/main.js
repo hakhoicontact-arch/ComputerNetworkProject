@@ -2,7 +2,7 @@ import { CONFIG, state } from './config.js';
 import * as Utils from './utils.js';
 import * as Views from './views.js';
 import { startSignalR, sendCommand } from './network.js';
-import {processInputKey, renderDiskInfo} from './utils.js';
+import {processInputKey, renderDiskInfo, handleChatMessage, appendMessageToUI } from './utils.js';
 
 let previousObjectUrl = null;
 
@@ -336,6 +336,9 @@ function switchView(view) {
         case 'automation': 
             html = Views.renderAutomationLayout(); 
             break;
+        case 'about':
+            html = Views.renderAboutLayout();
+            break;
     }
     
     area.innerHTML = html;
@@ -665,6 +668,34 @@ function attachViewListeners(view) {
         if (btnWork) {
             btnWork.onclick = () => sendCommand('interact_macro', { type: 'open_workspace' });
         }
+
+        const chatInput = document.getElementById('chat-input');
+        const sendBtn = document.getElementById('send-chat-btn');
+        const clearBtn = document.getElementById('clear-chat-btn');
+
+        const sendMessage = () => {
+            const text = chatInput.value.trim();
+            if (!text) return;
+            
+            // 1. Gửi lệnh đi
+            // action: 'chat_message', params: { text: ... }
+            sendCommand('chat_message', { text });
+
+            // 2. Hiện tin nhắn của mình lên ngay lập tức
+            const now = new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+            appendMessageToUI('Me', text, now, 'sent');
+            
+            chatInput.value = '';
+            chatInput.focus();
+        };
+
+        if (sendBtn) sendBtn.onclick = sendMessage;
+        if (chatInput) chatInput.onkeypress = (e) => { if(e.key === 'Enter') sendMessage(); };
+        
+        if (clearBtn) clearBtn.onclick = () => {
+            const chatBox = document.getElementById('chat-messages');
+            if(chatBox) chatBox.innerHTML = '<div class="flex justify-center"><span class="text-[10px] text-slate-400 bg-slate-100 px-2 py-1 rounded-full">Đã xóa lịch sử chat</span></div>';
+        };
     }
 }
 
@@ -691,7 +722,8 @@ function doLogin(username, password) {
     startSignalR(dynamicUrl, username, password, {
         onResponse: handleResponse,
         onUpdate: handleRealtimeUpdate,
-        onBinary: handleBinaryStream
+        onBinary: handleBinaryStream,
+        onChatMessage: handleChatMessage
     })
     .then((conn) => {
         // SỬA LỖI: Nhận biến conn từ resolve
@@ -769,7 +801,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         'screenshot': 'Xem Màn hình',
                         'keylogger': 'Nhật ký Phím',
                         'webcam': 'Camera An ninh',
-                        'system': 'Cấu hình Hệ thống'
+                        'system': 'Cấu hình Hệ thống',
+                        'terminal': 'Terminal',
+                        'automation': 'Tự Động Hóa',
+                        'about': 'Giới Thiệu Dự Án'
                     };
                     const view = this.getAttribute('data-view');
                     const titleIcon = this.querySelector('i').className;
@@ -1118,3 +1153,34 @@ function setupThemeToggle() {
         });
     }
 }
+
+window.toggleAboutItem = (id) => {
+    const content = document.getElementById(id);
+    const icon = document.getElementById(`icon-${id}`);
+    
+    if (!content || !icon) return;
+
+    // Kiểm tra trạng thái hiện tại
+    const isHidden = content.classList.contains('hidden');
+
+    // 1. Đóng tất cả các tab khác (Optional: Nếu muốn chỉ mở 1 cái 1 lúc)
+    // Để trải nghiệm tốt hơn, ta nên đóng các cái khác lại
+    document.querySelectorAll('[id^="guide-"]').forEach(el => {
+        if (el.id !== id && !el.classList.contains('hidden')) {
+            el.classList.add('hidden');
+            // Reset icon của cái bị đóng
+            const otherIcon = document.getElementById(`icon-${el.id}`);
+            if(otherIcon) otherIcon.style.transform = 'rotate(0deg)';
+        }
+    });
+
+    // 2. Toggle cái hiện tại
+    if (isHidden) {
+        content.classList.remove('hidden');
+        content.classList.add('animate-fade-in'); // Thêm hiệu ứng fade nhẹ
+        icon.style.transform = 'rotate(180deg)'; // Xoay mũi tên lên
+    } else {
+        content.classList.add('hidden');
+        icon.style.transform = 'rotate(0deg)'; // Xoay mũi tên xuống
+    }
+};
