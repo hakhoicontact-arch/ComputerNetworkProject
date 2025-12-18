@@ -1885,30 +1885,29 @@ function getGuideData() {
 
                         <div class="rounded-lg border border-slate-200 dark:border-slate-600 overflow-hidden mb-2">
                             <div class="bg-slate-900 rounded-lg p-4 font-mono text-xs text-slate-300 border border-slate-700 shadow-inner">
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div>
-                                        <div class="text-green-400 mb-2 border-b border-slate-700 pb-1">Initialize connection... Ready</div>
-                                        <ul class="space-y-2">
-                                            <li><span class="text-yellow-400"> > ipconpig</li>
-                                            <li><span class="text-yellow-400</span>D:\\Code\\MMT\\RCS</li>
-                                            <li><span class="text-yellow-400"></span>WIndows IP Configuration</li>
-                                            <li><span class="text-yellow-400"></span></li>
-                                        </ul>
-                                    </div>
-
-                                    <div>
-                                        <div class="text-red-400 font-bold mb-2 border-b border-slate-700 pb-1"># ACTION</div>
-                                        <ul class="space-y-2">
-                                            <li><span class="text-yellow-400">shutdown /s /t 0</span> : Tắt máy ngay</li>
-                                            <li><span class="text-yellow-400">shutdown /r /t 0</span> : Khởi động lại</li>
-                                            <li><span class="text-yellow-400">net user</span> : Quản lý tài khoản</li>
-                                            <li><span class="text-yellow-400">cd [path]</span> : Chuyển thư mục</li>
-                                        </ul>
-                                    </div>
+                                <div class="gap-4">
+                                    <div class="text-green-400 mb-2 border-b border-slate-700 pb-1">Initialize connection... Ready</div>
+                                    <ul class="space-y-2">
+                                        <li><span class="text-yellow-400"> > ipconpig</li>
+                                        <li>D:\\Code\\MMT\\RCS\\ipconfig</li>
+                                        <li>WIndows IP Configuration</li>
+                                        <li>Windows IP Configuration</li>
+                                        <li>    Ethernet adapter Radmin VPN:</li>
+                                        <li>    Connection-specific DNS Suffix  . : </li>
+                                        <li>    IPv6 Address. . . . . . . . . . . : fdfd::1ac6:bdfc</li>
+                                        <li>    Link-local IPv6 Address . . . . . : fe80::3707:2972:a037:9959%17</li>
+                                        <li>    IPv4 Address. . . . . . . . . . . : 26.198.189.252</li>
+                                        <li>    Subnet Mask . . . . . . . . . . . : 255.0.0.0</li>
+                                        <li>    Default Gateway . . . . . . . . . : 26.0.0.1</li>
+                                        <li>Ethernet adapter Ethernet:</li>
+                                        <li>    Media State . . . . . . . . . . . : Media disconnected</li>
+                                        <li>    Connection-specific DNS Suffix  . :</li>
+                                    <li>    Wireless LAN adapter Local Area Connection* 1:</li>
+                                    </ul>
                                 </div>
                                 
                                 <div class="mt-4 pt-3 border-t border-slate-700 text-[10px] text-slate-500 italic">
-                                    > Lưu ý: Một số lệnh yêu cầu quyền Administrator để thực thi.
+                                    > Type command here (e.g., iconfig, dir)...
                                 </div>
                             </div>
                             <div class="bg-slate-50 dark:bg-slate-900 p-2 text-[10px] text-center text-slate-500 italic">
