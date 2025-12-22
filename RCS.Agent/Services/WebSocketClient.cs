@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------
-// File: SignalRClient.cs
-// Role: Định tuyến giao tiếp giữa Agent và Server thông qua SignalR.
+// File: WebSocketClient.cs
+// Role: Định tuyến giao tiếp giữa Agent và Server thông qua WebSocket.
 //
 // Chịu trách nhiệm:
 //      1. Giữ kết nối (Connection Keep-Alive).
@@ -20,7 +20,7 @@ using System.Threading.Tasks;
 
 namespace RCS.Agent.Services
 {
-    public class SignalRClient
+    public class WebSocketClient
     {
         #region --- FIELDS & EVENTS ---
 
@@ -35,7 +35,7 @@ namespace RCS.Agent.Services
 
         #region --- INITIALIZATION (KHỞI TẠO) ---
 
-        public SignalRClient(string serverUrl)
+        public WebSocketClient(string serverUrl)
         {
             _serverUrl = serverUrl;
 
@@ -71,7 +71,7 @@ namespace RCS.Agent.Services
             {
                 // Bắt đầu bắt tay (Handshake) với Server
                 await _connection.StartAsync();
-                Console.WriteLine($"[SignalR] Connected to {_serverUrl}");
+                Console.WriteLine($"[WebSocket] Connected to {_serverUrl}");
 
                 // Sau khi kết nối thành công, gửi ngay gói tin đăng ký để Server biết mình là ai
                 // ProtocolConstants.RegisterAgent là tên hàm trên Server Hub
@@ -80,7 +80,7 @@ namespace RCS.Agent.Services
             catch (Exception ex)
             {
                 // Nếu Server chưa bật hoặc sai URL
-                Console.WriteLine($"[SignalR] Connection Failed: {ex.Message}");
+                Console.WriteLine($"[WebSocket] Connection Failed: {ex.Message}");
             }
         }
 

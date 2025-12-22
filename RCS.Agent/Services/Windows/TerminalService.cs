@@ -10,12 +10,12 @@ namespace RCS.Agent.Services.Windows
     public class TerminalService
     {
         private Process _cmdProcess;
-        private readonly SignalRClient _signalRClient;
+        private readonly WebSocketClient _WebSocketClient;
         private bool _isRunning = false;
 
-        public TerminalService(SignalRClient signalRClient)
+        public TerminalService(WebSocketClient WebSocketClient)
         {
-            _signalRClient = signalRClient;
+            _WebSocketClient = WebSocketClient;
         }
 
         public void StartTerminal()
@@ -106,10 +106,10 @@ namespace RCS.Agent.Services.Windows
         {
             if (data == null) return;
             
-            // FIX: Kiểm tra _signalRClient có null không trước khi gọi
-            if (_signalRClient != null)
+            // FIX: Kiểm tra _WebSocketClient có null không trước khi gọi
+            if (_WebSocketClient != null)
             {
-                await _signalRClient.SendUpdateAsync(new RealtimeUpdate 
+                await _WebSocketClient.SendUpdateAsync(new RealtimeUpdate 
                 { 
                     Event = ProtocolConstants.EventTerminalOutput, 
                     Data = data 

